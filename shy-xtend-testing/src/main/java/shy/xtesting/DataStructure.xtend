@@ -18,6 +18,7 @@ class DataStructure {
 	
 	// marked as final (no setters are generated)
 	// internal types are not final, and can be initialized e.g: by ORM frameworks
+	// validated after init()
 	val String notAssigned1
 	@Val String notAssigned2
 	
