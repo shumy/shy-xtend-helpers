@@ -12,6 +12,7 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
 import java.util.List
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
+import java.util.ArrayList
 
 @Target(TYPE)
 @Active(BuilderProcessor)
@@ -35,20 +36,21 @@ class BuilderProcessor extends AbstractClassProcessor {
 	override doTransform(MutableClassDeclaration clazz, extension TransformationContext ctx) {
 		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
 		val notInitializedFields = allFields.filter[ initializer === null ].toList
-		val finalFields = allFields.filter[ final && initializer === null ].toList as List<MutableFieldDeclaration>
 		
 		// not initialized fields are always not final (avoid "not assigned" incorrect errors)
 		// immutability is guaranteed by setters and getters
+		val finalFields = allFields.filter[ final && initializer === null ]
 		finalFields.forEach[
 			final = false
 			addAnnotation(Val.newAnnotationReference)
 		]
 		
-		//TODO ???
-		/*notInitializedFields.forEach[
+		//validate un-assigned (non optional) fields 
+		val toNullValidate = new ArrayList<MutableFieldDeclaration>
+		notInitializedFields.forEach[
 			if (findAnnotation(Val.findTypeGlobally) !== null)
-				finalFields.add(it)
-		]*/
+				toNullValidate.add(it)
+		]
 		
 		
 		val builderClassName = clazz.qualifiedName + 'Builder'
@@ -113,7 +115,7 @@ class BuilderProcessor extends AbstractClassProcessor {
 				
 				«IF clazz.declaredMethods.exists[ simpleName == 'init' && parameters.length === 0 ]»this.init();«ENDIF»
 				
-				«FOR field: finalFields»
+				«FOR field: toNullValidate»
 					if («field.simpleName» == null) throw new «RuntimeException»("Field must be initialized: «field.simpleName»");
 				«ENDFOR»
 			'''
