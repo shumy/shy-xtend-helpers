@@ -9,4 +9,12 @@
 	<artifactId>xhelper-descriptor</artifactId>
 	<name>${global.name} - descriptor</name>
 	<version>0.1</version>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.github.shumy</groupId>
+			<artifactId>xhelper-data</artifactId>
+			<version>0.1</version>
+		</dependency>
+	</dependencies>
 </project>

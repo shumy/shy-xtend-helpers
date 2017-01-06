@@ -6,12 +6,13 @@ import java.util.List
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MutableParameterDeclaration
+import org.eclipse.xtend.lib.macro.declaration.ParameterDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+import shy.xhelper.data.Val
 import shy.xhelper.descriptor.ISchema
 import shy.xhelper.descriptor.SMethod
 import shy.xhelper.descriptor.SProperty
@@ -70,15 +71,13 @@ class SchemaProcessor extends AbstractClassProcessor {
 		]
 	}
 	
-	def propertyInitializer(extension TransformationContext ctx, MutableFieldDeclaration prop) {
-		val isOptional = prop.findAnnotation(Optional.findTypeGlobally) != null
+	def propertyInitializer(extension TransformationContext ctx, FieldDeclaration prop) {
+		val isFinal = prop.final || prop.findAnnotation(Val.findTypeGlobally) !== null 
 		
-		'''
-			new SProperty("«prop.simpleName»", «prop.type.typeInitializer», «isOptional»)
-		'''
+		'''new SProperty("«prop.simpleName»", «prop.type.typeInitializer», «!isFinal»)'''
 	}
 	
-	def methodInitializer(extension TransformationContext ctx, MutableMethodDeclaration meth) {
+	def methodInitializer(extension TransformationContext ctx, MethodDeclaration meth) {
 		//do not use additional context parameters
 		val originalParams = meth.parameters.filter[ primarySourceElement != null ]
 		
@@ -91,7 +90,7 @@ class SchemaProcessor extends AbstractClassProcessor {
 		'''
 	}
 	
-	def parameterInitializer(extension TransformationContext ctx, MutableParameterDeclaration param)
+	def parameterInitializer(extension TransformationContext ctx, ParameterDeclaration param)
 		'''new «SProperty.canonicalName»("«param.simpleName»", «param.type.typeInitializer»)'''
 	
 	def typeInitializer(TypeReference rType) {

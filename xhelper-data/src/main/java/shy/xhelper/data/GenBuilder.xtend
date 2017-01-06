@@ -5,37 +5,86 @@ import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1
+import java.util.List
+import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 
 @Target(TYPE)
 @Active(BuilderProcessor)
 annotation GenBuilder {}
 
 class BuilderProcessor extends AbstractClassProcessor {
+	val genAccessors = new AccessorsProcessor
+	
+	override doValidate(ClassDeclaration clazz, extension ValidationContext ctx) {
+		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
+		allFields.forEach[
+			if (type.primitive)
+				addError('''Primitive value: use boxed values instead.''')
+		]
+	}
+	
 	override doRegisterGlobals(ClassDeclaration clazz, extension RegisterGlobalsContext ctx) {
 		registerClass(clazz.qualifiedName + 'Builder')
 	}
 	
 	override doTransform(MutableClassDeclaration clazz, extension TransformationContext ctx) {
 		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
-		val assignableFields = allFields.filter[ !final && initializer === null ]
-		val finalFields = allFields.filter[ final && initializer === null ]
+		val notInitializedFields = allFields.filter[ initializer === null ].toList
+		val finalFields = allFields.filter[ final && initializer === null ].toList as List<MutableFieldDeclaration>
+		
+		// not initialized fields are always not final (avoid "not assigned" incorrect errors)
+		// immutability is guaranteed by setters and getters
+		finalFields.forEach[
+			final = false
+			addAnnotation(Val.newAnnotationReference)
+		]
+		
+		//TODO ???
+		/*notInitializedFields.forEach[
+			if (findAnnotation(Val.findTypeGlobally) !== null)
+				finalFields.add(it)
+		]*/
 		
 		
 		val builderClassName = clazz.qualifiedName + 'Builder'
 		val builderClazz = findClass(builderClassName)
 		
-		allFields.forEach[ field |
+		//add important fields and setters...
+		notInitializedFields.forEach[ field |
 			val fTypeRef = field.type.wrapperIfPrimitive
-			
 			builderClazz.addField(field.simpleName)[
 				type = fTypeRef
-				visibility = Visibility.PUBLIC
+				visibility = Visibility.DEFAULT
+			]
+			
+			val assignedFieldName = field.simpleName + "Assigned"
+			builderClazz.addField(assignedFieldName)[
+				type = boolean.newTypeReference
+				visibility = Visibility.DEFAULT
+				initializer = '''true'''
+			]
+			
+			builderClazz.addMethod('set' + field.simpleName.toFirstUpper)[
+				addParameter(field.simpleName, field.type)
+				returnType = builderClazz.newTypeReference
+				body = '''
+					this.«field.simpleName» = «field.simpleName»;
+					this.«assignedFieldName» = true;
+					return this;
+				'''
 			]
 		]
+		
+		//generate getters...
+		builderClazz.addAnnotation(GenAccessors.newAnnotationReference[
+			setBooleanValue('onlyGetters', true)
+		])
+		genAccessors.doTransform(builderClazz, ctx)
 		
 		
 		builderClazz.addConstructor[
@@ -53,33 +102,25 @@ class BuilderProcessor extends AbstractClassProcessor {
 			'''
 		]
 		
-		if (!finalFields.empty)
-			clazz.addConstructor[
-				visibility = Visibility.PUBLIC
-				for (field: finalFields)
-					addParameter(field.simpleName, field.type)
-				
-				body = '''
-					«FOR field: finalFields»
-						this.«field.simpleName» = «field.simpleName»;
-					«ENDFOR»
-				'''
-			]
-		
 		clazz.addConstructor[
 			visibility = Visibility.DEFAULT
 			val builderTypeRef = newTypeReference(builderClassName)
 			addParameter('builder', builderTypeRef)
 			body = '''
-				this(«FOR field: finalFields SEPARATOR ','»builder.«field.simpleName»«ENDFOR»);
-				«FOR field: assignableFields»
-					this.«field.simpleName» = builder.«field.simpleName»;
+				«FOR field: notInitializedFields»
+					if (builder.«field.simpleName»Assigned) this.«field.simpleName» = builder.«field.simpleName»;
+				«ENDFOR»
+				
+				«IF clazz.declaredMethods.exists[ simpleName == 'init' && parameters.length === 0 ]»this.init();«ENDIF»
+				
+				«FOR field: finalFields»
+					if («field.simpleName» == null) throw new «RuntimeException»("Field must be initialized: «field.simpleName»");
 				«ENDFOR»
 			'''
 		]
 		
-		//add default constructor if not exist
-		if (finalFields.empty && !clazz.declaredConstructors.exists[ simpleName == clazz.simpleName && parameters.length === 0])
+		// default constructor if not exist
+		if (!clazz.declaredConstructors.exists[ simpleName == clazz.simpleName && parameters.length === 0])
 			clazz.addConstructor[
 				visibility = Visibility.PUBLIC
 				body = '''//default empty constructor'''
