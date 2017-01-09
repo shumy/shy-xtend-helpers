@@ -1,7 +1,7 @@
-package shy.testing
+package shy.testing.data
 
 import org.junit.Test
-import shy.xtesting.DataStructure
+import shy.xtesting.data.DataStructure
 import org.junit.Assert
 
 class TestDataStructure {

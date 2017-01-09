@@ -157,6 +157,8 @@
 	<modules>
 		<module>xhelper-data</module>
 		<module>xhelper-descriptor</module>
+		<module>xhelper-ebean</module>
+		
 		<module>shy-xtend-testing</module>
 	</modules>
 </project>

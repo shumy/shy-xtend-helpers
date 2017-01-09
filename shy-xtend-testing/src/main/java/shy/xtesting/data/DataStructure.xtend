@@ -1,4 +1,4 @@
-package shy.xtesting
+package shy.xtesting.data
 
 import java.time.LocalDate
 import java.time.Month

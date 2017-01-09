@@ -6,12 +6,9 @@
 		<version>${global.version}</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>shy-xtend-testing</artifactId>
-	<name>${global.name} - testing</name>
-	
-	<properties>
-		<maven.deploy.skip>true</maven.deploy.skip>
-	</properties>
+	<artifactId>xhelper-ebean</artifactId>
+	<name>${global.name} - ebean</name>
+	<version>0.1</version>
 	
 	<dependencies>
 		<dependency>
@@ -19,28 +16,16 @@
 			<artifactId>xhelper-data</artifactId>
 			<version>0.1</version>
 		</dependency>
+	
 		<dependency>
-			<groupId>com.github.shumy</groupId>
-			<artifactId>xhelper-descriptor</artifactId>
-			<version>0.1</version>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.0.0.GA</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.shumy</groupId>
-			<artifactId>xhelper-ebean</artifactId>
-			<version>0.1</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
-			<scope>test</scope>
+			<groupId>org.avaje.ebean</groupId>
+			<artifactId>ebean</artifactId>
+			<version>9.5.1</version>
 		</dependency>
 	</dependencies>
 	
@@ -55,7 +40,7 @@
 						<id>main</id>
 						<phase>process-classes</phase>
 						<configuration>
-							<packages>shy.xtesting.ebean.**</packages>
+							<packages>shy.xhelper.ebean.**</packages>
 							<transformArgs>debug=1</transformArgs>
 						</configuration>
 						<goals>
@@ -64,7 +49,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--<plugin>
+			<!--  <plugin>
 				<groupId>io.repaint.maven</groupId>
 				<artifactId>tiles-maven-plugin</artifactId>
 				<version>2.8</version>
