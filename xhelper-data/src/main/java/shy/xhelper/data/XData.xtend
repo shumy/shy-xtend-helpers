@@ -13,6 +13,10 @@ import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
+import shy.xhelper.data.gen.AccessorsProcessor
+import shy.xhelper.data.gen.BuilderProcessor
+import shy.xhelper.data.gen.GenAccessors
+import shy.xhelper.data.gen.GenBuilder
 
 @Target(TYPE)
 @Active(XDataProcessor)

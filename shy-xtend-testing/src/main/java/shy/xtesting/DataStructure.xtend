@@ -3,8 +3,8 @@ package shy.xtesting
 import java.time.LocalDate
 import java.time.Month
 import shy.xhelper.data.XData
-import shy.xhelper.descriptor.an.GenSchema
-import shy.xhelper.descriptor.an.Public
+import shy.xhelper.descriptor.gen.GenSchema
+import shy.xhelper.descriptor.Public
 import shy.xhelper.data.Val
 
 @XData

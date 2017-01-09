@@ -1,10 +1,11 @@
-package shy.xhelper.data
+package shy.xhelper.data.gen
 
 import java.lang.annotation.Target
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.TransformationContext
+import shy.xhelper.data.Val
 
 @Target(TYPE)
 @Active(AccessorsProcessor)

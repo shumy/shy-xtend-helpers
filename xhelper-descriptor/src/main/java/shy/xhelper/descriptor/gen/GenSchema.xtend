@@ -1,4 +1,4 @@
-package shy.xhelper.descriptor.an
+package shy.xhelper.descriptor.gen
 
 import com.google.common.collect.ImmutableList
 import java.lang.annotation.Target
@@ -14,6 +14,7 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import shy.xhelper.data.Val
 import shy.xhelper.descriptor.ISchema
+import shy.xhelper.descriptor.Public
 import shy.xhelper.descriptor.SMethod
 import shy.xhelper.descriptor.SProperty
 import shy.xhelper.descriptor.SType

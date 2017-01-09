@@ -1,4 +1,4 @@
-package shy.xhelper.descriptor.an
+package shy.xhelper.descriptor
 
 import java.lang.annotation.Target
 
