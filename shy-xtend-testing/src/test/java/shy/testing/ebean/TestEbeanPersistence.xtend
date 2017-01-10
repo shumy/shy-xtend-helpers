@@ -50,15 +50,15 @@ class TestEbeanPersistence {
 		]
 		
 		Country.find.byId(1L) => [
-			Assert.assertEquals('{"id":1,"code":"+351","name":"Portugal","version":1}', Ebean.json.toJson(it))
+			Assert.assertEquals('{"id":1,"version":1,"code":"+351","name":"Portugal"}', toJson)
 		]
 		
 		Address.find.byId(1L) => [
-			Assert.assertEquals('{"id":1,"city":"Aveiro","country":{"id":1},"version":1}', Ebean.json.toJson(it))
+			Assert.assertEquals('{"id":1,"version":1,"city":"Aveiro","country":{"id":1,"type":"ref","to":"shy.xtesting.ebean.Country"}}', toJson)
 		]
 		
 		User.find.byId(1L) => [
-			Assert.assertEquals('{"id":1,"name":"Alex Bruto","email":"alex@gmail.com","birthdate":1483228800000,"address":{"id":1},"version":1}', Ebean.json.toJson(it))
+			Assert.assertEquals('{"id":1,"version":1,"name":"Alex Bruto","email":"alex@gmail.com","birthdate":"2017-01-01","address":{"id":1,"type":"ref","to":"shy.xtesting.ebean.Address"}}', toJson)
 		]
 	}
 }

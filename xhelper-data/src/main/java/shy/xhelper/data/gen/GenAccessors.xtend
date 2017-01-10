@@ -25,25 +25,33 @@ class AccessorsProcessor extends AbstractClassProcessor {
 			field.markAsRead
 			
 			val getType = if (field.type == boolean.newTypeReference || field.type == Boolean.newTypeReference) 'is' else 'get'
-			clazz.addMethod(getType + field.simpleName.toFirstUpper)[
-				addAnnotation(Pure.newAnnotationReference)
-				returnType = field.type
-				body = '''
-					return this.«field.simpleName»;
-				'''
-			]
+			val methName = getType + field.simpleName.toFirstUpper
+			
+			//don't generate if already defined by the user...
+			if (!clazz.declaredMethods.exists[ simpleName == methName && parameters.length === 0])
+				clazz.addMethod(methName)[
+					addAnnotation(Pure.newAnnotationReference)
+					returnType = field.type
+					body = '''
+						return this.«field.simpleName»;
+					'''
+				]
 		]
 		
 		if (!anno.getBooleanValue('onlyGetters'))
 			nonFinalFields.forEach[ field |
-				clazz.addMethod('set' + field.simpleName.toFirstUpper)[
-					addParameter(field.simpleName, field.type)
-					returnType = clazz.newTypeReference
-					body = '''
-						this.«field.simpleName» = «field.simpleName»;
-						return this;
-					'''
-				]
+				val methName = 'set' + field.simpleName.toFirstUpper
+				
+				//don't generate if already defined by the user...
+				if (!clazz.declaredMethods.exists[ simpleName == methName && parameters.length === 1 && parameters.get(0).type == field.type])
+					clazz.addMethod(methName)[
+						addParameter(field.simpleName, field.type)
+						returnType = clazz.newTypeReference
+						body = '''
+							this.«field.simpleName» = «field.simpleName»;
+							return this;
+						'''
+					]
 			]
 	}
 }
