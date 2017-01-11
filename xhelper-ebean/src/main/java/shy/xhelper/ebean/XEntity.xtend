@@ -5,9 +5,7 @@ import com.avaje.ebean.Model
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import java.lang.annotation.Target
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import javax.persistence.Entity
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
@@ -16,13 +14,15 @@ import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import shy.xhelper.data.gen.AccessorsProcessor
 import shy.xhelper.data.gen.GenAccessors
-import shy.xhelper.ebean.json.EntityRefSerializer
-import shy.xhelper.ebean.json.LocalDateDeserializer
-import shy.xhelper.ebean.json.LocalDateSerializer
-import shy.xhelper.ebean.json.LocalDateTimeDeserializer
-import shy.xhelper.ebean.json.LocalDateTimeSerializer
-import shy.xhelper.ebean.json.LocalTimeDeserializer
-import shy.xhelper.ebean.json.LocalTimeSerializer
+import shy.xhelper.ebean.json.JsonDynamicProfile
+import shy.xhelper.ebean.json.converter.LocalDateTimeDeserializer
+import shy.xhelper.ebean.json.converter.LocalDateTimeSerializer
+import shy.xhelper.ebean.json.converter.RefSerializer
+import java.time.LocalTime
+import java.time.LocalDate
+import shy.xhelper.ebean.json.converter.CollectionSerializer
+import shy.xhelper.ebean.json.converter.RefDeserializer
+import shy.xhelper.ebean.json.converter.CollectionDeserializer
 
 @Target(TYPE)
 @Active(XEntityProcessor)
@@ -45,27 +45,19 @@ class XEntityProcessor extends AbstractClassProcessor {
 		genAccessors.doTransform(clazz, ctx)
 		
 		allFields.forEach[
-			//Date default converters...
-			if (type == LocalDate.newTypeReference) {
-				addAnnotation(JsonSerialize.newAnnotationReference[ setClassValue('using', LocalDateSerializer.newTypeReference) ])
-				addAnnotation(JsonDeserialize.newAnnotationReference[ setClassValue('using', LocalDateDeserializer.newTypeReference) ])
-			}
-			
-			//Time default converters...
-			if (type == LocalTime.newTypeReference) {
-				addAnnotation(JsonSerialize.newAnnotationReference[ setClassValue('using', LocalTimeSerializer.newTypeReference) ])
-				addAnnotation(JsonDeserialize.newAnnotationReference[ setClassValue('using', LocalTimeDeserializer.newTypeReference) ])
-			}
-			
-			//DateTime default converters...
-			if (type == LocalDateTime.newTypeReference) {
+			if (#{LocalDate.newTypeReference, LocalTime.newTypeReference, LocalDateTime.newTypeReference}.contains(type)) {
 				addAnnotation(JsonSerialize.newAnnotationReference[ setClassValue('using', LocalDateTimeSerializer.newTypeReference) ])
 				addAnnotation(JsonDeserialize.newAnnotationReference[ setClassValue('using', LocalDateTimeDeserializer.newTypeReference) ])
 			}
 			
-			//if the field is an Entity ref -> add RefConverters
 			if (BaseModel.newTypeReference.isAssignableFrom(type)) {
-				addAnnotation(JsonSerialize.newAnnotationReference[ setClassValue('using', EntityRefSerializer.newTypeReference) ])
+				addAnnotation(JsonSerialize.newAnnotationReference[ setClassValue('using', RefSerializer.newTypeReference) ])
+				addAnnotation(JsonDeserialize.newAnnotationReference[ setClassValue('using', RefDeserializer.newTypeReference) ])
+			}
+			
+			if (Iterable.newTypeReference.isAssignableFrom(type)) {
+				addAnnotation(JsonSerialize.newAnnotationReference[ setClassValue('using', CollectionSerializer.newTypeReference) ])
+				addAnnotation(JsonDeserialize.newAnnotationReference[ setClassValue('using', CollectionDeserializer.newTypeReference) ])
 			}
 		]
 		
@@ -84,7 +76,7 @@ class XEntityProcessor extends AbstractClassProcessor {
 			addParameter('jsonString', string)
 			body = '''
 				try {
-					return jMapper.readValue(jsonString, «clazz.simpleName».class);
+					return «JsonDynamicProfile».deserialize(«clazz.simpleName».class, jsonString);
 				} catch(«Throwable» ex) {
 					throw new «RuntimeException»(ex);
 				}
@@ -96,7 +88,7 @@ class XEntityProcessor extends AbstractClassProcessor {
 			returnType = string
 			body = '''
 				try {
-					return jMapper.writeValueAsString(this);
+					return «JsonDynamicProfile».serialize(this);
 				} catch(«Throwable» ex) {
 					throw new «RuntimeException»(ex);
 				}

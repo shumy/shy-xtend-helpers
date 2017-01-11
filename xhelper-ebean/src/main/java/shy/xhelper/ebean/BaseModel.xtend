@@ -5,31 +5,31 @@ import com.avaje.ebean.annotation.CreatedTimestamp
 import com.avaje.ebean.annotation.SoftDelete
 import com.avaje.ebean.annotation.UpdatedTimestamp
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDateTime
 import javax.persistence.Id
 import javax.persistence.MappedSuperclass
 import javax.persistence.Version
-import shy.xhelper.data.gen.GenAccessors
+import org.eclipse.xtend.lib.annotations.Accessors
 
-@GenAccessors
 @MappedSuperclass
-class BaseModel extends Model implements IEntity {
+class BaseModel extends Model {
 	@Id
-	Long id
+	@Accessors Long id
 	
-	//@JsonIgnore(serialize=true)
 	@Version
-	Long version
+	@JsonProperty(access=READ_ONLY)
+	@Accessors(PUBLIC_GETTER) Long version
 	
 	@JsonIgnore
 	@SoftDelete
-	Boolean deleted = false
+	@Accessors(PUBLIC_GETTER) Boolean deleted = false
 	
 	@JsonIgnore
 	@CreatedTimestamp
-	LocalDateTime createdAt
+	@Accessors(PUBLIC_GETTER) LocalDateTime createdAt
 	
 	@JsonIgnore
 	@UpdatedTimestamp
-	LocalDateTime updatedAt
+	@Accessors(PUBLIC_GETTER) LocalDateTime updatedAt
 }

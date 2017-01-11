@@ -3,38 +3,23 @@
 	<parent>
 		<groupId>com.github.shumy</groupId>
 		<artifactId>shy-xtend-helpers</artifactId>
-		<version>${global.version}</version>
+		<version>[1.0.0, 2.0.0)</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>xhelper-ebean</artifactId>
 	<name>${global.name} - ebean</name>
-	<version>0.1</version>
-	
-	<properties>
-		<jacksonVersion>2.8.5</jacksonVersion>
-	</properties>
+	<version>0.1.0</version>
 	
 	<dependencies>
 		<dependency>
 			<groupId>com.github.shumy</groupId>
+			<artifactId>xhelper-json</artifactId>
+			<version>[0.1.0, 1.0.0)</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.shumy</groupId>
 			<artifactId>xhelper-data</artifactId>
-			<version>0.1</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jacksonVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jacksonVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>${jacksonVersion}</version>
+			<version>[0.1.0, 1.0.0)</version>
 		</dependency>
 		
 		<dependency>
@@ -45,7 +30,7 @@
 		<dependency>
 			<groupId>org.avaje.ebean</groupId>
 			<artifactId>ebean</artifactId>
-			<version>9.5.1</version>
+			<version>[9.5.1, 10.0.0)</version>
 		</dependency>
 	</dependencies>
 	

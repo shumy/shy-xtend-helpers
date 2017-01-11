@@ -3,18 +3,18 @@
 	<parent>
 		<groupId>com.github.shumy</groupId>
 		<artifactId>shy-xtend-helpers</artifactId>
-		<version>${global.version}</version>
+		<version>[1.0.0, 2.0.0)</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>xhelper-descriptor</artifactId>
 	<name>${global.name} - descriptor</name>
-	<version>0.1</version>
+	<version>0.1.0</version>
 	
 	<dependencies>
 		<dependency>
 			<groupId>com.github.shumy</groupId>
 			<artifactId>xhelper-data</artifactId>
-			<version>0.1</version>
+			<version>[0.1.0, 1.0.0)</version>
 		</dependency>
 	</dependencies>
 </project>
