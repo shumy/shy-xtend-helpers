@@ -13,8 +13,8 @@ class DataStructure {
 	// (static, transient, pre-assigned) fields are not part of the builder
 	val static staticVar = "Not in schema"
 	val transient transientVar = "Not in schema"
-	val name = "Micael"
-	val dt = LocalDate.of(2017, Month.JANUARY, 1)
+	val String name = "Micael"
+	val LocalDate dt = LocalDate.of(2017, Month.JANUARY, 1)
 	
 	// marked as final (no setters are generated)
 	// internal types are not final, and can be initialized e.g: by ORM frameworks

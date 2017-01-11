@@ -18,6 +18,7 @@ import shy.xhelper.descriptor.Public
 import shy.xhelper.descriptor.SMethod
 import shy.xhelper.descriptor.SProperty
 import shy.xhelper.descriptor.SType
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Target(TYPE)
 @Active(SchemaProcessor)
@@ -36,6 +37,7 @@ class SchemaProcessor extends AbstractClassProcessor {
 			transient = true
 			static = true
 			final = true
+			
 			type = List.newTypeReference(SProperty.newTypeReference)
 			initializer = '''«ImmutableList».copyOf(new SProperty[] {
 				«FOR prop: allFields SEPARATOR ','»
@@ -49,6 +51,7 @@ class SchemaProcessor extends AbstractClassProcessor {
 			transient = true
 			static = true
 			final = true
+			
 			type = List.newTypeReference(SMethod.newTypeReference)
 			initializer = '''«ImmutableList».copyOf(new SMethod[] {
 				«FOR meth: allMethods SEPARATOR ','»
@@ -58,6 +61,7 @@ class SchemaProcessor extends AbstractClassProcessor {
 		]
 		
 		clazz.addMethod('getProperties')[
+			addAnnotation(JsonIgnore.newAnnotationReference)
 			returnType = List.newTypeReference(SProperty.newTypeReference)
 			body = '''
 				return properties;
@@ -65,6 +69,7 @@ class SchemaProcessor extends AbstractClassProcessor {
 		]
 		
 		clazz.addMethod('getMethods')[
+			addAnnotation(JsonIgnore.newAnnotationReference)
 			returnType = List.newTypeReference(SMethod.newTypeReference)
 			body = '''
 				return methods;

@@ -9,4 +9,12 @@
 	<artifactId>xhelper-data</artifactId>
 	<name>${global.name} - data</name>
 	<version>0.1.0</version>
+	
+	<dependencies>
+		<dependency>
+			<groupId>com.github.shumy</groupId>
+			<artifactId>xhelper-json</artifactId>
+			<version>[0.1.0, 1.0.0)</version>
+		</dependency>
+	</dependencies>
 </project>

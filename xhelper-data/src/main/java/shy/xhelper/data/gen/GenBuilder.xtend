@@ -21,14 +21,6 @@ annotation GenBuilder {}
 class BuilderProcessor extends AbstractClassProcessor {
 	val genAccessors = new AccessorsProcessor
 	
-	override doValidate(ClassDeclaration clazz, extension ValidationContext ctx) {
-		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
-		allFields.forEach[
-			if (type.primitive)
-				addError('''Primitive value: use boxed values instead.''')
-		]
-	}
-	
 	override doRegisterGlobals(ClassDeclaration clazz, extension RegisterGlobalsContext ctx) {
 		registerClass(clazz.qualifiedName + 'Builder')
 	}
@@ -149,5 +141,9 @@ class BuilderProcessor extends AbstractClassProcessor {
 				return data;
 			'''
 		]
+	}
+	
+	override doValidate(ClassDeclaration clazz, extension ValidationContext ctx) {
+		genAccessors.doValidate(clazz, ctx)
 	}
 }

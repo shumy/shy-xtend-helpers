@@ -1,14 +1,15 @@
 package shy.xhelper.ebean.json
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.annotation.JsonInclude.Include
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.Temporal
-import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.Map
+import org.eclipse.xtend.lib.annotations.Accessors
+import shy.xhelper.ebean.json.JsonDynamicProfile.Profile
 
 class JsonDynamicProfile {
 	static val defaultProfile = new Profile => [

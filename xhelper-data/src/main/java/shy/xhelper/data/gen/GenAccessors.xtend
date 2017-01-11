@@ -3,8 +3,10 @@ package shy.xhelper.data.gen
 import java.lang.annotation.Target
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
-import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.ValidationContext
+import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import shy.xhelper.data.Val
 
 @Target(TYPE)
@@ -53,5 +55,13 @@ class AccessorsProcessor extends AbstractClassProcessor {
 						'''
 					]
 			]
+	}
+	
+	override doValidate(ClassDeclaration clazz, extension ValidationContext ctx) {
+		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
+		allFields.forEach[
+			if (type.primitive)
+				addError('''Primitive value: use boxed values instead.''')
+		]
 	}
 }

@@ -13,11 +13,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.github.shumy</groupId>
-			<artifactId>xhelper-json</artifactId>
-			<version>[0.1.0, 1.0.0)</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.shumy</groupId>
 			<artifactId>xhelper-data</artifactId>
 			<version>[0.1.0, 1.0.0)</version>
 		</dependency>
@@ -25,7 +20,7 @@
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
-			<version>1.0.0.GA</version>
+			<version>[1.0.0,2.0.0)</version>
 		</dependency>
 		<dependency>
 			<groupId>org.avaje.ebean</groupId>
