@@ -80,15 +80,26 @@ class TestAsync {
 	
 	@Test
 	def void testThrowErrorPipeline() {
-		val res1 = new AtomicReference('')
-		val pipe1 = new XPipeline<Void, String, String>
-		pipe1
+		val resSync = new AtomicReference('')
+		val pipeSync = new XPipeline<Void, String, String>
+		pipeSync
 			.filter[ throw new RuntimeException('error') ]
-			.deliver[ res1.set('''«route» -> «data»''') ]
-			.error[ msg, error | res1.set('''«msg.route» -> «error.message»''') ]
+			.deliver[ resSync.set('''«route» -> «data»''') ]
+			.error[ msg, error | resSync.set('''«msg.route» -> «error.message»''') ]
 		
 		//some system sends a message...
-		pipe1.in(new XMessage(null, 'route', 'error'))
-		Assert.assertEquals('route -> error', res1.get)
+		pipeSync.in(new XMessage(null, 'route', 'error'))
+		Assert.assertEquals('route -> error', resSync.get)
+		
+		val resAsync = new AtomicReference('')
+		val pipeAsync = new XPipeline<Void, String, String>
+		pipeAsync
+			.filter[ result(new RuntimeException('error')) true ]
+			.deliver[ resAsync.set('''«route» -> «data»''') ]
+			.error[ msg, error | resAsync.set('''«msg.route» -> «error.message»''') ]
+		
+		//some system sends a message...
+		pipeAsync.in(new XMessage(null, 'route', 'error'))
+		Assert.assertEquals('route -> error', resAsync.get)
 	}
 }

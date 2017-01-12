@@ -58,7 +58,7 @@ class Async {
 	}
 	
 	static def <R> void task(()=>R task) {
-		
+		//TODO: similar to run but... runs in a different thread
 	}
 }
 

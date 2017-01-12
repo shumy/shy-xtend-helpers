@@ -1,30 +1,13 @@
 package shy.xhelper.pipeline
 
-import org.slf4j.LoggerFactory
 import shy.xhelper.async.Async
 import shy.xhelper.async.XAsynchronous
-import shy.xhelper.pipeline.io.IError
+import shy.xhelper.pipeline.io.DefaultErrorImpl
 import shy.xhelper.pipeline.io.IInbound
 import shy.xhelper.pipeline.io.PipelineException
 
-class XPipeline<CLIENT_INFO, DATA, OUT_DATA> implements IInbound<XMessage<CLIENT_INFO, DATA, OUT_DATA>>, IError<CLIENT_INFO, DATA, OUT_DATA> {
-	static val logger = LoggerFactory.getLogger(XPipeline)
-	
-	//var IError<CLIENT_INFO, OUT_DATA> parent = null //back propagate the error...
-	var (XMessage<CLIENT_INFO, DATA, OUT_DATA>, Throwable)=>void onError = null
+class XPipeline<CLIENT_INFO, DATA, OUT_DATA> extends DefaultErrorImpl<CLIENT_INFO, DATA, OUT_DATA> implements IInbound<XMessage<CLIENT_INFO, DATA, OUT_DATA>> {
 	var (XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>void onDeliver = null
-	
-	package def void processError(XMessage<CLIENT_INFO, DATA, OUT_DATA> msg, Throwable error) {
-		logger.error(error.message)
-		if (onError !== null)
-			onError.apply(msg, error)
-		else
-			throw error
-	}
-	
-	override void error((XMessage<CLIENT_INFO, DATA, OUT_DATA>, Throwable)=>void onError) {
-		this.onError = onError
-	}
 	
 	override in(XMessage<CLIENT_INFO, DATA, OUT_DATA> msg) {
 		if (onDeliver === null)
@@ -49,7 +32,7 @@ class XPipeline<CLIENT_INFO, DATA, OUT_DATA> implements IInbound<XMessage<CLIENT
 	}
 	
 	@XAsynchronous
-	def XPipeline<CLIENT_INFO, DATA, OUT_DATA> filter((XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>boolean filter) {
+	def filter((XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>boolean filter) {
 		val newPipe = new XPipeline<CLIENT_INFO, DATA, OUT_DATA>
 		
 		error[ msg, error | newPipe.processError(msg, error) ]
@@ -61,7 +44,7 @@ class XPipeline<CLIENT_INFO, DATA, OUT_DATA> implements IInbound<XMessage<CLIENT
 	}
 	
 	@XAsynchronous
-	def XPipeline<CLIENT_INFO, DATA, OUT_DATA> forEach((XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>Void process) {
+	def forEach((XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>Void process) {
 		val newPipe = new XPipeline<CLIENT_INFO, DATA, OUT_DATA>
 		
 		error[ msg, error | newPipe.processError(msg, error) ]
@@ -72,9 +55,9 @@ class XPipeline<CLIENT_INFO, DATA, OUT_DATA> implements IInbound<XMessage<CLIENT
 		return newPipe
 	}
 	
-	def XPipeline<CLIENT_INFO, DATA, OUT_DATA> deliver((XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>void onDeliver) {
+	def deliver((XMessage<CLIENT_INFO, DATA, OUT_DATA>)=>void onDeliver) {
 		if (this.onDeliver !== null)
-			throw new RuntimeException("Can't override the deliver. It was already set!")
+			throw new RuntimeException("Can't override Pipeline deliver. It was already set!")
 		
 		this.onDeliver = onDeliver
 		return this
