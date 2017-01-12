@@ -12,8 +12,6 @@ import shy.xhelper.data.gen.AccessorsProcessor
 import shy.xhelper.data.gen.BuilderProcessor
 import shy.xhelper.data.gen.GenAccessors
 import shy.xhelper.data.gen.GenBuilder
-import shy.xhelper.ebean.json.gen.GenJson
-import shy.xhelper.ebean.json.gen.JsonProcessor
 
 @Target(TYPE)
 @Active(XDataProcessor)
@@ -22,14 +20,12 @@ annotation XData {}
 class XDataProcessor extends AbstractClassProcessor {
 	val genAccessors = new AccessorsProcessor
 	val genBuilder = new BuilderProcessor
-	val genJson = new JsonProcessor
 	
 	override doRegisterGlobals(ClassDeclaration clazz, extension RegisterGlobalsContext ctx) {
 		genBuilder.doRegisterGlobals(clazz, ctx)
 	}
 	
 	override doTransform(MutableClassDeclaration clazz, extension TransformationContext ctx) {
-		clazz.addAnnotation(GenJson.newAnnotationReference)
 		clazz.addAnnotation(GenBuilder.newAnnotationReference)
 		clazz.addAnnotation(GenAccessors.newAnnotationReference[
 			setBooleanValue('onlyGetters', true)
@@ -37,12 +33,6 @@ class XDataProcessor extends AbstractClassProcessor {
 		
 		genAccessors.doTransform(clazz, ctx)
 		genBuilder.doTransform(clazz, ctx)
-		genJson.doTransform(clazz, ctx)
-		
-		clazz.addMethod('toString')[
-			returnType = string
-			body = '''return this.toJson();'''
-		]
 	}
 	
 	override doValidate(ClassDeclaration clazz, extension ValidationContext ctx) {

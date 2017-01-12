@@ -11,6 +11,7 @@ import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
+import shy.xhelper.ebean.json.IJson
 import shy.xhelper.ebean.json.JsonDynamicProfile
 import shy.xhelper.ebean.json.converter.CollectionDeserializer
 import shy.xhelper.ebean.json.converter.CollectionSerializer
@@ -28,6 +29,8 @@ class JsonProcessor extends AbstractClassProcessor {
 	
 	override doTransform(MutableClassDeclaration clazz, extension TransformationContext ctx) {
 		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
+		
+		clazz.implementedInterfaces = clazz.implementedInterfaces + #[IJson.newTypeReference]
 		
 		allFields.forEach[
 			if (type.inferred) {

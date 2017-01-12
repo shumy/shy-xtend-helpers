@@ -16,5 +16,10 @@
 			<artifactId>xhelper-data</artifactId>
 			<version>[0.1.0, 1.0.0)</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.shumy</groupId>
+			<artifactId>xhelper-json</artifactId>
+			<version>[0.1.0, 1.0.0)</version>
+		</dependency>
 	</dependencies>
 </project>

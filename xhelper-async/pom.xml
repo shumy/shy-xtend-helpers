@@ -6,7 +6,7 @@
 		<version>[1.0.0, 2.0.0)</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>xhelper-data</artifactId>
-	<name>${global.name} - data</name>
+	<artifactId>xhelper-async</artifactId>
+	<name>${global.name} - async</name>
 	<version>0.1.0</version>
 </project>

@@ -2,13 +2,15 @@ package shy.xtesting.data
 
 import java.time.LocalDate
 import java.time.Month
-import shy.xhelper.data.XData
-import shy.xhelper.descriptor.gen.GenSchema
-import shy.xhelper.descriptor.Public
 import shy.xhelper.data.Val
+import shy.xhelper.data.XData
+import shy.xhelper.descriptor.Public
+import shy.xhelper.descriptor.gen.GenSchema
+import shy.xhelper.ebean.json.gen.GenJson
 
 @XData
 @GenSchema
+@GenJson
 class DataStructure {
 	// (static, transient, pre-assigned) fields are not part of the builder
 	val static staticVar = "Not in schema"

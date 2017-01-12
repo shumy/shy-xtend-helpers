@@ -30,6 +30,11 @@
 			<artifactId>xhelper-ebean</artifactId>
 			<version>[0.1.0, 1.0.0)</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.shumy</groupId>
+			<artifactId>xhelper-pipeline</artifactId>
+			<version>[0.1.0, 1.0.0)</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>junit</groupId>

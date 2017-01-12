@@ -30,7 +30,7 @@ class SchemaProcessor extends AbstractClassProcessor {
 		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
 		val allMethods = clazz.declaredMethods.filter[ findAnnotation(Public.findTypeGlobally) != null ]
 		
-		clazz.extendedClass = ISchema.newTypeReference
+		clazz.implementedInterfaces = clazz.implementedInterfaces + #[ISchema.newTypeReference]
 		
 		clazz.addField('properties')[
 			visibility = Visibility.PUBLIC

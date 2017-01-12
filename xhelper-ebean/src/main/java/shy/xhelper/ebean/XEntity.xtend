@@ -7,14 +7,14 @@ import javax.persistence.Entity
 import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
+import org.eclipse.xtend.lib.macro.ValidationContext
+import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import shy.xhelper.data.gen.AccessorsProcessor
 import shy.xhelper.data.gen.GenAccessors
 import shy.xhelper.ebean.json.gen.GenJson
 import shy.xhelper.ebean.json.gen.JsonProcessor
-import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
-import org.eclipse.xtend.lib.macro.ValidationContext
 
 @Target(TYPE)
 @Active(XEntityProcessor)
@@ -29,6 +29,8 @@ class XEntityProcessor extends AbstractClassProcessor {
 	override doTransform(MutableClassDeclaration clazz, extension TransformationContext ctx) {
 		val ano = clazz.findAnnotation(XEntity.findTypeGlobally)
 		clazz.extendedClass = ano.getClassValue('value')
+		
+		clazz.implementedInterfaces = clazz.implementedInterfaces + #[IEntity.newTypeReference]
 		
 		clazz.addAnnotation(Entity.newAnnotationReference)
 		clazz.addAnnotation(GenAccessors.newAnnotationReference)
