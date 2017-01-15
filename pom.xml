@@ -160,6 +160,7 @@
 		<module>xhelper-data</module>
 		<module>xhelper-descriptor</module>
 		<module>xhelper-ebean</module>
+		<module>xhelper-circuit</module>
 		
 		<module>shy-xtend-testing</module>
 	</modules>

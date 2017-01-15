@@ -81,11 +81,6 @@ class BuilderProcessor extends AbstractClassProcessor {
 		genAccessors.doTransform(builderClazz, ctx)
 		
 		
-		builderClazz.addConstructor[
-			visibility = Visibility.DEFAULT
-			body = '''//default empty constructor'''
-		]
-		
 		builderClazz.addMethod('operator_doubleArrow')[
 			returnType = clazz.newTypeReference
 			addParameter('block', Procedure1.newTypeReference(builderClazz.newTypeReference))
@@ -116,7 +111,7 @@ class BuilderProcessor extends AbstractClassProcessor {
 		// default constructor if not exist
 		if (!clazz.declaredConstructors.exists[ simpleName == clazz.simpleName && parameters.length === 0])
 			clazz.addConstructor[
-				visibility = Visibility.PUBLIC
+				visibility = Visibility.DEFAULT
 				body = '''//default empty constructor'''
 			]
 		

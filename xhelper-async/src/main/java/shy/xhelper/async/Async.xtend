@@ -29,7 +29,7 @@ class Async {
 	}
 	
 	//mark the context as async and result available...
-	static def Void result() {
+	static def <T> T result() {
 		peek => [ isAsync = true result = null ]
 		return null
 	}
@@ -40,25 +40,37 @@ class Async {
 		null as T
 	}
 	
+	static def <T> T task(()=>T task) {
+		val asyncRes = peek
+		asyncRes.isAsync = true
+		
+		new Thread[
+			try {
+				val res = task.apply
+				AsyncScheduler.schedule[ asyncRes.result = res ]
+			} catch(Throwable ex) {
+				AsyncScheduler.schedule[ asyncRes.result = ex ]
+			}
+		].start
+		
+		null as T
+	}
+	
 	//run an enclosure function with async context available... 
-	static def <T> void run(()=>T enclosure, (T)=>void onResult, (Throwable)=>void onError) {
+	static def <T> void run(()=>T task, (T)=>void onResult, (Throwable)=>void onError) {
 		zone.get.push(new AsyncResult)
 			try {
-				val T value = enclosure.apply
+				val T value = task.apply
 				val ctx = zone.get.peek as AsyncResult<T>
 				if (ctx.isAsync) ctx.onResult[
 					processResult(onResult, onError)
 				] else
 					value.processResult(onResult, onError)
-			} catch(Throwable error) {
-				onError.apply(error)
+			} catch(Throwable ex) {
+				onError.apply(ex)
 			} finally {
 				zone.get.pop
 			}
-	}
-	
-	static def <R> void task(()=>R task) {
-		//TODO: similar to run but... runs in a different thread
 	}
 }
 

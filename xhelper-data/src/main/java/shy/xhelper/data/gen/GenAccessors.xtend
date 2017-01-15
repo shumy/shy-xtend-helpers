@@ -8,6 +8,7 @@ import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import shy.xhelper.data.Val
+import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 @Target(TYPE)
 @Active(AccessorsProcessor)
@@ -21,6 +22,7 @@ class AccessorsProcessor extends AbstractClassProcessor {
 		val anno = clazz.findAnnotation(GenAccessors.findTypeGlobally)
 		
 		val allFields = clazz.declaredFields.filter[ !(transient || static) ]
+		val finalFields = allFields.filter[ (final || findAnnotation(Val.findTypeGlobally) !== null) && initializer === null ]
 		val nonFinalFields = allFields.filter[ !(final || findAnnotation(Val.findTypeGlobally) !== null) ]
 		
 		allFields.forEach[ field |
@@ -55,6 +57,17 @@ class AccessorsProcessor extends AbstractClassProcessor {
 						'''
 					]
 			]
+		
+		// default constructor for final fields
+		clazz.addConstructor[ con |
+			con.visibility = Visibility.PUBLIC
+			finalFields.forEach[ con.addParameter(simpleName, type) ]
+			con.body = '''
+				«FOR field: finalFields»
+					this.«field.simpleName» = «field.simpleName»;
+				«ENDFOR»
+			'''
+		]
 	}
 	
 	override doValidate(ClassDeclaration clazz, extension ValidationContext ctx) {
