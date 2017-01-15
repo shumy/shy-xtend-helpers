@@ -1,5 +1,6 @@
 package shy.xhelper.descriptor.gen
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.google.common.collect.ImmutableList
 import java.lang.annotation.Target
 import java.util.List
@@ -18,7 +19,6 @@ import shy.xhelper.descriptor.Public
 import shy.xhelper.descriptor.SMethod
 import shy.xhelper.descriptor.SProperty
 import shy.xhelper.descriptor.SType
-import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Target(TYPE)
 @Active(SchemaProcessor)

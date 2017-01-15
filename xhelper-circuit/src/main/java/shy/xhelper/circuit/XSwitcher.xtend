@@ -10,7 +10,7 @@ import shy.xhelper.circuit.spec.DefaultPublisher
 import shy.xhelper.circuit.spec.Error
 
 @Accessors
-class XSwitch<D> extends DefaultPublisher<D> {
+class XSwitcher<D> extends DefaultPublisher<D> {
 	val Set<Branch<D>> branches = new HashSet<Branch<D>>
 	
 	override publish(D data) {

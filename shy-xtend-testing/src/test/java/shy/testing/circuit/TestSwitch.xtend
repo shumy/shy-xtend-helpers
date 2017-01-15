@@ -5,7 +5,7 @@ import java.util.HashMap
 import org.junit.Assert
 import org.junit.Test
 import shy.xhelper.async.AsyncScheduler
-import shy.xhelper.circuit.XSwitch
+import shy.xhelper.circuit.XSwitcher
 import shy.xhelper.circuit.spec.IConnector
 import shy.xtesting.circuit.Message
 
@@ -13,7 +13,7 @@ import static shy.xhelper.async.Async.*
 
 class TestSwitch {
 	
-	def void publishMesages(XSwitch<Message> it) {
+	def void publishMesages(XSwitcher<Message> it) {
 		//init streams...
 		publish(new Message(1L, 'init', 1))
 		publish(new Message(2L, 'init', 2))
@@ -33,7 +33,7 @@ class TestSwitch {
 		val sb = new StringBuilder 
 		
 		val streams = new HashMap<Long, IConnector<Message>>
-		val switcher = new XSwitch<Message>('s1') => [
+		val switcher = new XSwitcher<Message>('s1') => [
 			when[ cmd == 'init' ].then[ msg |
 				val branch = when[ cmd == 'nxt' && id === msg.id ].then[
 					sb.append('''stream - «msg.id» «it»«'\n'»''')
@@ -68,7 +68,7 @@ class TestSwitch {
 		val dataList = new ArrayList<Message>
 		
 		val streams = new HashMap<Long, IConnector<Message>>
-		val switcher = new XSwitch<Message>('s1') => [
+		val switcher = new XSwitcher<Message>('s1') => [
 			when[ result(cmd == 'init') ].then[ msg |
 				val branch = when[ task[ cmd == 'nxt' && id === msg.id ] ].then[
 					dataList.add(it)
