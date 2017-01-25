@@ -63,7 +63,7 @@ class Route<D> extends DefaultIO<D> {
 		this.matcher = pattern.matcher('')
 	}
 	
-	def tryPublish(D data) {
+	package def tryPublish(D data) {
 		matcher.reset(matchValue.apply(data))
 		try {
 			if (matcher.matches) {

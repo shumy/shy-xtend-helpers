@@ -7,9 +7,9 @@ import shy.xhelper.circuit.XSwitcher
 import shy.xhelper.circuit.spec.IConnector
 import shy.xtesting.circuit.Message
 
-class TestSwitch {
+class TestSwitcher {
 	
-	def void publishMesages(XSwitcher<Message> it) {
+	def void publishMessages(XSwitcher<Message> it) {
 		//init streams...
 		publish(new Message(1L, 'init', 1))
 		publish(new Message(2L, 'init', 2))
@@ -25,7 +25,7 @@ class TestSwitch {
 	}
 	
 	@Test
-	def void testStreamController() {
+	def void testSyncSwitcher() {
 		val sb = new StringBuilder
 		
 		val streams = new HashMap<Long, IConnector<Message>>
@@ -45,7 +45,7 @@ class TestSwitch {
 			]
 		]
 		
-		switcher.publishMesages
+		switcher.publishMessages
 		
 		Assert.assertEquals(3, switcher.branches.size)
 		Assert.assertEquals('''

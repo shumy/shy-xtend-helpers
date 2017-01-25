@@ -1,4 +1,4 @@
-package shy.testing.async
+package shy.testing.circuit
 
 import java.util.HashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -10,7 +10,7 @@ import shy.xhelper.pipeline.XPipeline
 
 import static shy.xhelper.async.Async.*
 
-class TestAsync {
+class TestPipeline {
 	
 	@Test
 	def void testSyncPipeline() {

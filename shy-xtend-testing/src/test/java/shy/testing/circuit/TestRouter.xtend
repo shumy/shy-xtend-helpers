@@ -1,20 +1,20 @@
 package shy.testing.circuit
 
+import org.junit.Assert
 import org.junit.Test
 import shy.xhelper.circuit.XRouter
 import shy.xtesting.circuit.Message
-import org.junit.Assert
 
 class TestRouter {
 	
-	def void publishMesages(XRouter<Message> it) {
+	def void publishMessages(XRouter<Message> it) {
 		publish(new Message(1L, '/x/y', 1))
 		publish(new Message(2L, '/y/10', 1))
 		publish(new Message(3L, 'no-route', 1)) //no route
 	}
 	
 	@Test
-	def void testRouter() {
+	def void testSyncRouter() {
 		val sb = new StringBuilder
 		
 		val router = new XRouter<Message>('r1')[ cmd ] => [
@@ -35,7 +35,7 @@ class TestRouter {
 			]
 		]
 		
-		router.publishMesages
+		router.publishMessages
 		println(sb.toString)
 		
 		Assert.assertEquals(3, router.routes.size)

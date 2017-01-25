@@ -14,4 +14,10 @@ class CircuitExtensions {
 		con.connect(next)
 		return next
 	}
+	
+	static def <D> router(IConnector<D> con, String name, (D)=>String matchValue) {
+		val next = new XRouter<D>(name, matchValue)
+		con.connect(next)
+		return next
+	}
 }
