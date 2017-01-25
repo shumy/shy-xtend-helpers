@@ -1,15 +1,11 @@
 package shy.testing.circuit
 
-import java.util.ArrayList
 import java.util.HashMap
 import org.junit.Assert
 import org.junit.Test
-import shy.xhelper.async.AsyncScheduler
 import shy.xhelper.circuit.XSwitcher
 import shy.xhelper.circuit.spec.IConnector
 import shy.xtesting.circuit.Message
-
-import static shy.xhelper.async.Async.*
 
 class TestSwitch {
 	
@@ -30,7 +26,7 @@ class TestSwitch {
 	
 	@Test
 	def void testStreamController() {
-		val sb = new StringBuilder 
+		val sb = new StringBuilder
 		
 		val streams = new HashMap<Long, IConnector<Message>>
 		val switcher = new XSwitcher<Message>('s1') => [
@@ -62,7 +58,7 @@ class TestSwitch {
 		'''.toString, sb.toString)
 	}
 	
-	@Test
+	/*@Test
 	def void testAsyncStreamController() {
 		val controlSb = new StringBuilder
 		val dataList = new ArrayList<Message>
@@ -94,6 +90,6 @@ class TestSwitch {
 			complete - (1, cpl, 6) at s1-B2
 		'''.toString, controlSb.toString)
 		Assert.assertEquals('[(1, nxt, 3), (2, nxt, 4), (1, nxt, 5)]'.toString, dataList.sortInplaceBy[ seq ].toString)
-	}
+	}*/
 	
 }

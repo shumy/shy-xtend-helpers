@@ -155,7 +155,6 @@
 	
 	<modules>
 		<module>xhelper-async</module>
-		<module>xhelper-pipeline</module>
 		<module>xhelper-json</module>
 		<module>xhelper-data</module>
 		<module>xhelper-descriptor</module>

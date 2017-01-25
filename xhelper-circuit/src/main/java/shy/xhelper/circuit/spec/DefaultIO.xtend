@@ -3,7 +3,7 @@ package shy.xhelper.circuit.spec
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors(NONE)
-abstract class DefaultIO<D> extends DefaultPublisher<D> implements IConnector<D> {
+class DefaultIO<D> extends DefaultPublisher<D> implements IConnector<D> {
 	
 	override connect(IPublisher<D> publisher) {
 		if (this.publisher !== null)

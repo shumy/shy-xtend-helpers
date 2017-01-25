@@ -29,13 +29,13 @@ class Async {
 	}
 	
 	//mark the context as async and result available...
-	static def <T> T result() {
+	static def <T> T yield() {
 		peek => [ isAsync = true result = null ]
 		return null
 	}
 	
 	//mark the context as async and set the result...
-	static def <T> T result(T aResult) {
+	static def <T> T yield(T aResult) {
 		peek => [ isAsync = true result = aResult ]
 		null as T
 	}

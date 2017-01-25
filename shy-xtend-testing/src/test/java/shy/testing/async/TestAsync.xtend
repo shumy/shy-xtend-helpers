@@ -51,14 +51,14 @@ class TestAsync {
 		val res1_count = new AtomicInteger(0)
 		val pipe1 = new XPipeline<Void, String, String>
 		pipe1
-			.filter[ result(data.contains('message')) ]
+			.filter[ yield(data.contains('message')) ]
 			.map[ msg |
-				result(new HashMap<String, String> => [
+				yield(new HashMap<String, String> => [
 					put('x', 'value')
 					put('y', msg.data)
 				])
 			]
-			.forEach[ res1_count.andIncrement result ]
+			.forEach[ res1_count.andIncrement yield ]
 			.deliver[ res1.set('''«route» -> «data»''') ]
 		
 		//some system sends a message...
@@ -70,7 +70,7 @@ class TestAsync {
 		val res2 = new AtomicReference('')
 		val pipe2 = new XPipeline<Void, String, String>
 		pipe2
-			.filter[ result(false) ]
+			.filter[ yield(false) ]
 			.deliver[ res2.set('''«route» -> «data»''') ]
 		
 		//some system sends a message...
@@ -94,7 +94,7 @@ class TestAsync {
 		val resAsync = new AtomicReference('')
 		val pipeAsync = new XPipeline<Void, String, String>
 		pipeAsync
-			.filter[ result(new RuntimeException('error')) true ]
+			.filter[ yield(new RuntimeException('error')) true ]
 			.deliver[ resAsync.set('''«route» -> «data»''') ]
 			.error[ msg, error | resAsync.set('''«msg.route» -> «error.message»''') ]
 		

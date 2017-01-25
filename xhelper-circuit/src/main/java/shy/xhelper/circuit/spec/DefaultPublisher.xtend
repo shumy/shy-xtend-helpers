@@ -13,7 +13,7 @@ class DefaultPublisher<D> extends DefaultElement implements IPublisher<D> {
 		return this
 	}
 	
-	override error((Error)=>void onError) {
+	override error((CircuitError)=>void onError) {
 		if (this.onError !== null)
 			throw new RuntimeException("Can't override Pipeline error. It was already set!")
 			

@@ -4,11 +4,11 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 class DefaultElement {
 	@Accessors val String name
-	protected var (Error)=>void onError = null
+	protected var (CircuitError)=>void onError = null
 	
 	new(String name) { this.name = name }
 	
-	def stackError(Error error) {
+	def stackError(CircuitError error) {
 		error.stack.add(name)
 		if (onError !== null)
 			onError.apply(error)

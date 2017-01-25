@@ -4,7 +4,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import java.util.Stack
 
 @Accessors
-class Error {
+class CircuitError {
 	val String msg
 	val Throwable ex
 	val stack = new Stack<String>
