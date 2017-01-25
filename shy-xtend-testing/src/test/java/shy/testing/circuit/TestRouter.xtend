@@ -10,7 +10,7 @@ class TestRouter {
 	def void publishMesages(XRouter<Message> it) {
 		publish(new Message(1L, '/x/y', 1))
 		publish(new Message(2L, '/y/10', 1))
-		publish(new Message(3L, 'no path', 1)) //no route
+		publish(new Message(3L, 'no-route', 1)) //no route
 	}
 	
 	@Test
@@ -29,6 +29,10 @@ class TestRouter {
 			route('(/.*)')
 				.extract[ params, data | sb.append('''.* - params - «params.toString»«'\n'»''') data ]
 				.then[ sb.append('''.* - «toString»«'\n'»''') ]
+				
+			noRoute[
+				sb.append('''no-route - «toString»«'\n'»''') 
+			]
 		]
 		
 		router.publishMesages
@@ -43,6 +47,7 @@ class TestRouter {
 			/y/(.*) - (2, /y/10, 1)
 			.* - params - [/y/10]
 			.* - (2, /y/10, 1)
+			no-route - (3, no-route, 1)
 		'''.toString, sb.toString)
 	}
 }

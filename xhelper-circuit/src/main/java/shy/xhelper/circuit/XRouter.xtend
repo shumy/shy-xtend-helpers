@@ -12,9 +12,11 @@ import shy.xhelper.async.XAsynchronous
 import shy.xhelper.circuit.spec.CircuitError
 import shy.xhelper.circuit.spec.DefaultIO
 import shy.xhelper.circuit.spec.DefaultPublisher
+import shy.xhelper.circuit.spec.IConnector
 
 class XRouter<D> extends DefaultPublisher<D> {
 	val (D)=>String matchValue
+	var (D)=>void noRoute = null
 	
 	@Accessors val Set<Route<D>> routes = new HashSet<Route<D>>
 	
@@ -25,8 +27,12 @@ class XRouter<D> extends DefaultPublisher<D> {
 	
 	override publish(D data) {
 		//a copy of the set is used to support concurrent modifications
+		var hasRoute = false
 		for (route: new HashSet(routes))
-			route.publish(data)
+			hasRoute = route.tryPublish(data)
+		
+		if (!hasRoute && noRoute !== null)
+			noRoute.apply(data)
 		
 		return this
 	}
@@ -37,6 +43,10 @@ class XRouter<D> extends DefaultPublisher<D> {
 		
 		routes.add(route)
 		return route
+	}
+	
+	def noRoute((D)=>void noRoute) {
+		this.noRoute = noRoute
 	}
 }
 
@@ -53,19 +63,22 @@ class Route<D> extends DefaultIO<D> {
 		this.matcher = pattern.matcher('')
 	}
 	
-	override publish(D data) {
+	def tryPublish(D data) {
 		matcher.reset(matchValue.apply(data))
 		try {
-			if (matcher.matches)
-				return super.publish(data)
+			if (matcher.matches) {
+				publish(data)
+				return true
+			}
 		} catch(Throwable ex) {
 			stackError(new CircuitError(ex.message, ex))
-			return null
 		}
+		
+		return false
 	}
 	
 	@XAsynchronous
-	def <T> extract((List<String>, D)=>T extractor) {
+	def <T> IConnector<T> extract((List<String>, D)=>T extractor) {
 		val newExtractor = new DefaultIO<T>(name + '-E')
 		newExtractor.error[ stackError ]
 		
