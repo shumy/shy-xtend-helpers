@@ -22,7 +22,7 @@ class DefaultElement implements IElement {
 			circuit.addElement(this)
 	}
 	
-	def void stackError(CircuitError error) {
+	override stackError(CircuitError error) {
 		error.stack.add(name)
 		if (onError !== null)
 			onError.apply(error)

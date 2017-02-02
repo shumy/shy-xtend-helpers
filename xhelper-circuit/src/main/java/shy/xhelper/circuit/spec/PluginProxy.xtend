@@ -7,19 +7,24 @@ class PluginProxy<D> {
 	var IConnector<D> end = null
 	
 	def void traversePublish(D data, (D)=>void onData) {
-		if (tail === null)
+		if (tail === null) {
 			onData.apply(data)
+			return
+		}
 		
+		println('''data: «data» tail:«tail.name»''')
+		//end.then(onData) //TODO: can't change this
 		tail.publish(data)
-		end.then(onData)
 	}
 	
 	def void traverseError(CircuitError error, (CircuitError)=>void onError) {
-		if (tail === null)
+		if (tail === null) {
 			onError.apply(error)
+			return
+		}
 		
-		tail.error(onError)
-		(end as DefaultElement).stackError(error)
+		//tail.error(onError) //TODO: can't change this
+		end.stackError(error)
 	}
 	
 	def void connect(IPublisherConnector<D> plugin) {

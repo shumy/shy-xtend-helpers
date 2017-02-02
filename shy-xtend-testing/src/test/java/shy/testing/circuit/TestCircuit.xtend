@@ -27,8 +27,11 @@ class TestCircuit {
 				]
 			
 			// plugins
-			addPlugin('P1-M', new XPipeline<Message>('P2') => [
-				filter[ cmd != 'filtered' ] //add filter as a plugin...
+			addPlugin('P1-M', new XPipeline<Message>('Plugin') => [
+				filter[
+					println('''filter: «cmd»''')
+					cmd != 'filtered'
+				] //add filter as a plugin...
 			])
 			
 			Assert.assertEquals('''
