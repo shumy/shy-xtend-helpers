@@ -6,30 +6,28 @@ class CircuitRegistry {
 	static val ctx = new ThreadLocal<XCircuit>
 	static val circuits = new ConcurrentHashMap<String, XCircuit>
 	
-	static def ctx() {
-		val circuit = ctx.get
-		if (circuit === null)
-			throw new RuntimeException('No circuit available in context!')
-			
-		return circuit
-	}
+	static def ctx() { ctx.get }
 	
-	static def select(String circuitName) {
+	static def void select(String circuitName, (XCircuit)=>void runner) {
 		val circuit = circuits.get(circuitName)
 		if (circuit === null)
 			throw new RuntimeException('''No circuit available: { circuit: «circuitName» }''')
 			
 		ctx.set(circuit)
-		return circuit
+			runner.apply(circuit)
+		ctx.set(null)
 	}
 	
-	static def create(String circuitName) {
+	static def create(String circuitName, (XCircuit)=>void builder) {
 		if (circuits.containsKey(circuitName))
 			throw new RuntimeException('''Already existent circuit: { circuit: «circuitName» }''')
 		
 		val circuit = new XCircuit(circuitName)
-		circuits.put(circuitName, circuit)
 		ctx.set(circuit)
+			circuits.put(circuitName, circuit)
+			builder.apply(circuit)
+			circuit.complete
+		ctx.set(null)
 		
 		return circuit
 	}

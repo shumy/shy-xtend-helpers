@@ -4,6 +4,8 @@ import java.util.LinkedHashMap
 import java.util.UUID
 import org.eclipse.xtend.lib.annotations.Accessors
 import shy.xhelper.circuit.spec.IElement
+import shy.xhelper.circuit.spec.IPublisherConnector
+import shy.xhelper.circuit.spec.IPublisher
 
 class XCircuit  {
 	@Accessors val String name
@@ -18,19 +20,18 @@ class XCircuit  {
 		this.name = name
 	}
 	
-	//close the static part of the circuit
-	def void complete() { completed = true }
-	
-	def add(IElement elem) {
-		val elemName = elem.elementName
-		if (elements.containsKey(elemName))
-			throw new RuntimeException('''Element already exist in circuit: { circuit: «name», element: «elemName» }''')
-			
-		elements.put(elemName, elem)
-		return elemName
+	def String elementPostfix() {
+		if (completed) '''(«UUID.randomUUID.toString»)''' else ''
 	}
 	
-	def get(String elementName) {
+	def void addElement(IElement elem) {
+		if (elements.containsKey(elem.name))
+			throw new RuntimeException('''Element already exist in circuit: { circuit: «name», element: «elem.name» }''')
+			
+		elements.put(elem.name, elem)
+	}
+	
+	def getElement(String elementName) {
 		val elem = elements.get(elementName)
 		if (elements.containsKey(elem.name))
 			throw new RuntimeException('''No element available in circuit: { circuit: «name», element: «elementName» }''')
@@ -38,15 +39,22 @@ class XCircuit  {
 		return elem
 	}
 	
-	def void remove(String elementName) {
+	def void removeElement(String elementName) {
 		if (!completed)
 			throw new RuntimeException('''Can not remove element from circuit before completion: { circuit: «name», element: «elementName» }''')
 		
 		dynamicElements.remove(elementName)
 	}
 	
-	private def String elementName(IElement elem) {
-		if (completed) '''«elem.name»(«UUID.randomUUID.toString»)''' else elem.name
+	//close the static part of the circuit
+	def void complete() { completed = true }
+	
+	def <D> void addPlugin(String position, IPublisherConnector<D> plugin) {
+		val elem = staticElements.get(position) as IPublisher<D>
+		if (elem === null)
+			throw new RuntimeException('''No element at position: { circuit: «name», position: «position» }''')
+		
+		elem.proxy.connect(plugin)
 	}
 	
 	private def elements() {

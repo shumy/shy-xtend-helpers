@@ -1,25 +1,28 @@
 package shy.xhelper.circuit.spec
 
-import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
-@Accessors(NONE)
-class DefaultIO<D> extends DefaultPublisher<D> implements IConnector<D> {
+@FinalFieldsConstructor
+class DefaultIO<D> extends DefaultPublisher<D> implements IPublisherConnector<D> {
+	var connected = false
 	
 	override connect(IPublisher<D> publisher) {
-		if (this.publisher !== null)
-			throw new RuntimeException("Can't override Pipeline connect. It was already set!")
+		if (connected)
+			throw new RuntimeException("Can't reconnect to publisher. It was already set!")
 		
 		publisher.error[ stackError ]
 		connections.add(publisher)
 		
+		this.connected = true
 		this.publisher = publisher
 		return this
 	}
 	
 	override then((D)=>void onThen) {
-		if (this.onThen !== null)
-			throw new RuntimeException("Can't override Pipeline then. It was already set!")
+		if (connected)
+			throw new RuntimeException("Can't reconnect to publisher. It was already set!")
 		
+		this.connected = true
 		this.onThen = onThen
 		return this
 	}

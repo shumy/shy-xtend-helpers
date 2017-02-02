@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert
 import org.junit.Test
-import shy.xhelper.circuit.CircuitRegistry
 import shy.xhelper.circuit.XPipeline
 import shy.xtesting.circuit.Message
 
@@ -48,8 +47,6 @@ class TestPipeline {
 	
 	@Test
 	def void testAsyncPipeline() {
-		CircuitRegistry.create('testAsyncPipeline')
-		
 		val res1 = new AtomicReference('')
 		val res1_count = new AtomicInteger(0)
 		val pipe1 = new XPipeline<Message>('P1')
