@@ -1,19 +1,26 @@
 package shy.xhelper.circuit
 
-import java.util.HashSet
-import java.util.Set
-import org.eclipse.xtend.lib.annotations.Accessors
+import java.util.LinkedHashSet
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import shy.xhelper.circuit.spec.CircuitError
 import shy.xhelper.circuit.spec.DefaultIO
 import shy.xhelper.circuit.spec.DefaultPublisher
-import shy.xhelper.circuit.spec.CircuitError
+import shy.xhelper.circuit.spec.IConnector
 
-@Accessors
+@FinalFieldsConstructor
 class XSwitcher<D> extends DefaultPublisher<D> {
-	val Set<Branch<D>> branches = new HashSet<Branch<D>>
+	val branches = new LinkedHashSet<Branch<D>>
+	
+	def Iterable<Branch<D>> getBranches() { branches }
+	
+	def void remove(IConnector<D> branch) {
+		branches.remove(branch)
+		connections.remove(branch)
+	}
 	
 	override publish(D data) {
 		//a copy of the set is used to support concurrent modifications
-		for (branch: new HashSet(branches))
+		for (branch: new LinkedHashSet(branches))
 			branch.publish(data)
 		
 		return this
@@ -22,6 +29,7 @@ class XSwitcher<D> extends DefaultPublisher<D> {
 	def when((D)=>boolean condition) {
 		val branch = new Branch('''«name»-B«branches.size»''', condition)
 		branch.error[ stackError ]
+		connections.add(branch)
 		
 		branches.add(branch)
 		return branch
@@ -41,7 +49,7 @@ class Branch<D> extends DefaultIO<D> {
 			if (condition.apply(data))
 				return super.publish(data)
 		} catch(Throwable ex) {
-			stackError(new CircuitError(ex.message, ex))
+			stackError(new CircuitError(ex))
 			return null
 		}
 	}

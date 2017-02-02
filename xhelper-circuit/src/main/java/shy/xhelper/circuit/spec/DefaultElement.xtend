@@ -1,12 +1,18 @@
 package shy.xhelper.circuit.spec
 
+import java.util.LinkedHashSet
 import org.eclipse.xtend.lib.annotations.Accessors
 
-class DefaultElement {
+class DefaultElement implements IElement {
 	@Accessors val String name
+	protected val connections = new LinkedHashSet<IElement>
 	protected var (CircuitError)=>void onError = null
+
+	override getConnections() { connections }
 	
-	new(String name) { this.name = name }
+	new(String name) {
+		this.name = name
+	}
 	
 	def stackError(CircuitError error) {
 		error.stack.add(name)

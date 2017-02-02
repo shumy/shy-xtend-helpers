@@ -1,12 +1,11 @@
 package shy.xhelper.circuit
 
 import java.util.ArrayList
-import java.util.HashSet
+import java.util.LinkedHashSet
 import java.util.List
-import java.util.Set
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import shy.xhelper.async.Async
 import shy.xhelper.async.XAsynchronous
 import shy.xhelper.circuit.spec.CircuitError
@@ -14,21 +13,24 @@ import shy.xhelper.circuit.spec.DefaultIO
 import shy.xhelper.circuit.spec.DefaultPublisher
 import shy.xhelper.circuit.spec.IConnector
 
+@FinalFieldsConstructor
 class XRouter<D> extends DefaultPublisher<D> {
+	val routes = new LinkedHashSet<Route<D>>
+	
 	val (D)=>String matchValue
 	var (D)=>void noRoute = null
 	
-	@Accessors val Set<Route<D>> routes = new HashSet<Route<D>>
+	def Iterable<Route<D>> getRoutes() { routes }
 	
-	new(String name, (D)=>String matchValue) {
-		super(name)
-		this.matchValue = matchValue 
+	def void remove(IConnector<D> route) {
+		routes.remove(route)
+		connections.remove(route)
 	}
 	
 	override publish(D data) {
 		//a copy of the set is used to support concurrent modifications
 		var hasRoute = false
-		for (route: new HashSet(routes))
+		for (route: new LinkedHashSet(routes))
 			hasRoute = route.tryPublish(data)
 		
 		if (!hasRoute && noRoute !== null)
@@ -40,6 +42,7 @@ class XRouter<D> extends DefaultPublisher<D> {
 	def route(String regex) {
 		val route = new Route('''«name»-R«routes.size»''', matchValue, regex)
 		route.error[ stackError ]
+		connections.add(route)
 		
 		routes.add(route)
 		return route
@@ -71,7 +74,7 @@ class Route<D> extends DefaultIO<D> {
 				return true
 			}
 		} catch(Throwable ex) {
-			stackError(new CircuitError(ex.message, ex))
+			stackError(new CircuitError(ex))
 		}
 		
 		return false
@@ -81,6 +84,7 @@ class Route<D> extends DefaultIO<D> {
 	def <T> IConnector<T> extract((List<String>, D)=>T extractor) {
 		val newExtractor = new DefaultIO<T>(name + '-E')
 		newExtractor.error[ stackError ]
+		connections.add(newExtractor)
 		
 		then[ data |
 			val params = new ArrayList<String>(matcher.groupCount)
@@ -88,7 +92,7 @@ class Route<D> extends DefaultIO<D> {
 				params.add(matcher.group(i))
 			
 			Async.run([ extractor.apply(params, data) ], [ newExtractor.publish(it) ], [
-				newExtractor.stackError(new CircuitError(message, it))
+				newExtractor.stackError(new CircuitError(it))
 			])
 		]
 		

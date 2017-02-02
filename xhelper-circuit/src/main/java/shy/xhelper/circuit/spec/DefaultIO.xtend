@@ -10,6 +10,8 @@ class DefaultIO<D> extends DefaultPublisher<D> implements IConnector<D> {
 			throw new RuntimeException("Can't override Pipeline connect. It was already set!")
 		
 		publisher.error[ stackError ]
+		connections.add(publisher)
+		
 		this.publisher = publisher
 		return this
 	}

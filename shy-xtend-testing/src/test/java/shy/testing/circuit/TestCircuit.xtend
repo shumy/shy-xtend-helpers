@@ -23,13 +23,23 @@ class TestCircuit {
 				when[ cmd == 'filtered' ].then[ sb.append(it) ]
 			]
 		
-		pipe.error[ sb.append(it) ]
-		
-		pipe.publish('{"id":1,"cmd":"ok","seq":1}')
-		pipe.publish('{"id":1,"cmd":"error","seq":2}')
-		pipe.publish('{"id":1,"cmd":"filtered","seq":3}')
-		pipe.publish('{"id":2,"cmd":"ok","seq":4}')
+		pipe => [
+			error[ sb.append(it) ]
+			publish('{"id":1,"cmd":"ok","seq":1}')
+			publish('{"id":1,"cmd":"error","seq":2}')
+			publish('{"id":1,"cmd":"filtered","seq":3}')
+			publish('{"id":2,"cmd":"ok","seq":4}')
+		]
 		
 		Assert.assertEquals('(1, ok, 1){ "msg":"error", "stack":"[S1-B1, S1, P1-M-F, P1-M, P1]", "type":"RuntimeException" }(2, ok, 4)', sb.toString)
+		Assert.assertEquals('''
+		|-P1
+		  |-P1-M
+		    |-P1-M-F
+		      |-S1
+		        |-S1-B0
+		        |-S1-B1
+		        |-S1-B2
+		'''.toString, pipe.connectionTree)
 	}
 }

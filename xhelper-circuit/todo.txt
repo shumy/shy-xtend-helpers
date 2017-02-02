@@ -1,0 +1,5 @@
+1) plug a probe in any point on the circuit to read data flows. Useful for audit and production debug.
+2) distributed circuits?
+3) plugin-architecture, how to create extension points on the circuit?
+   register every XComponent and provide a register lookup?
+4) option for state persistence, stop, pause resume? Implement on XQueue?

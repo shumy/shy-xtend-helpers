@@ -41,7 +41,7 @@ class TestSwitcher {
 			when[ cmd == 'cpl' ].then[ msg | 
 				val branch = streams.get(msg.id)
 				sb.append('''complete - «msg» at «branch.name»«'\n'»''')
-				branches.remove(branch)
+				remove(branch)
 			]
 		]
 		

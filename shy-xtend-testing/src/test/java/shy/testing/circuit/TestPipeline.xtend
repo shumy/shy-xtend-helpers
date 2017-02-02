@@ -5,8 +5,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert
 import org.junit.Test
-import shy.xhelper.pipeline.XMessage
-import shy.xhelper.pipeline.XPipeline
+import shy.xhelper.circuit.CircuitRegistry
+import shy.xhelper.circuit.XPipeline
+import shy.xtesting.circuit.Message
 
 import static shy.xhelper.async.Async.*
 
@@ -16,90 +17,94 @@ class TestPipeline {
 	def void testSyncPipeline() {
 		val res1 = new AtomicReference('')
 		val res1_count = new AtomicInteger(0)
-		val pipe1 = new XPipeline<Void, String, String>
+		val pipe1 = new XPipeline<Message>('P1')
 		pipe1
-			.filter[ data.contains('test') ]
+			.filter[ cmd.contains('test') ]
 			.map[ msg |
-				new HashMap<String, String> => [
-					put('x', 'value')
-					put('y', msg.data)
+				new HashMap<String, Integer> => [
+					put('x', 10)
+					put('y', msg.seq)
 				]
 			]
 			.forEach[ res1_count.andIncrement null ]
-			.deliver[ res1.set('''«route» -> «data»''') ]
+			.then[ res1.set('''{x:«get('x')», y:«get('y')»}''') ]
 		
 		//some system sends a message...
-		pipe1.in(new XMessage(null, 'route', 'test-message'))
-		pipe1.in(new XMessage(null, 'route', 'test-message'))
+		pipe1.publish(new Message(1L, 'test-message', 20))
+		pipe1.publish(new Message(2L, 'test-message', 30))
 		Assert.assertEquals(2, res1_count.get)
-		Assert.assertEquals('route -> {x=value, y=test-message}', res1.get)
+		Assert.assertEquals('{x:10, y:30}', res1.get)
 		
 		val res2 = new AtomicReference('')
-		val pipe2 = new XPipeline<Void, String, String>
+		val pipe2 = new XPipeline<Message>('P2')
 		pipe2
 			.filter[ false ]
-			.deliver[ res2.set('''«route» -> «data»''') ]
+			.then[ res2.set('''«cmd» -> «seq»''') ]
 		
 		//some system sends a message...
-		pipe2.in(new XMessage(null, 'route', 'test-message'))
+		pipe2.publish(new Message(1L, 'test-message', 10))
 		Assert.assertEquals('', res2.get)
 	}
 	
 	@Test
 	def void testAsyncPipeline() {
+		CircuitRegistry.create('testAsyncPipeline')
+		
 		val res1 = new AtomicReference('')
 		val res1_count = new AtomicInteger(0)
-		val pipe1 = new XPipeline<Void, String, String>
+		val pipe1 = new XPipeline<Message>('P1')
 		pipe1
-			.filter[ yield(data.contains('message')) ]
+			.filter[ yield(cmd.contains('message')) ]
 			.map[ msg |
-				yield(new HashMap<String, String> => [
-					put('x', 'value')
-					put('y', msg.data)
+				yield(new HashMap<String, Integer> => [
+					put('x', 10)
+					put('y', msg.seq)
 				])
 			]
 			.forEach[ res1_count.andIncrement yield ]
-			.deliver[ res1.set('''«route» -> «data»''') ]
+			.then[ res1.set('''{x:«get('x')», y:«get('y')»}''')  ]
 		
 		//some system sends a message...
-		pipe1.in(new XMessage(null, 'route', 'test-message'))
-		pipe1.in(new XMessage(null, 'route', 'test-message'))
+		pipe1.publish(new Message(1L, 'test-message', 20))
+		pipe1.publish(new Message(2L, 'test-message', 30))
 		Assert.assertEquals(2, res1_count.get)
-		Assert.assertEquals('route -> {x=value, y=test-message}', res1.get)
+		Assert.assertEquals('{x:10, y:30}', res1.get)
 		
 		val res2 = new AtomicReference('')
-		val pipe2 = new XPipeline<Void, String, String>
+		val pipe2 = new XPipeline<Message>('P2')
 		pipe2
 			.filter[ yield(false) ]
-			.deliver[ res2.set('''«route» -> «data»''') ]
+			.then[ res2.set('''«cmd» -> «seq»''') ]
 		
 		//some system sends a message...
-		pipe2.in(new XMessage(null, 'route', 'test-message'))
+		pipe2.publish(new Message(1L, 'test-message', 10))
 		Assert.assertEquals('', res2.get)
 	}
 	
 	@Test
 	def void testThrowErrorPipeline() {
 		val resSync = new AtomicReference('')
-		val pipeSync = new XPipeline<Void, String, String>
+		val pipeSync = new XPipeline<Message>('P1')
 		pipeSync
-			.filter[ throw new RuntimeException('error') ]
-			.deliver[ resSync.set('''«route» -> «data»''') ]
-			.error[ msg, error | resSync.set('''«msg.route» -> «error.message»''') ]
+			.filter[ throw new RuntimeException('filter-error') ]
+			.then[ resSync.set('''«cmd» -> «seq»''') ]
 		
 		//some system sends a message...
-		pipeSync.in(new XMessage(null, 'route', 'error'))
-		Assert.assertEquals('route -> error', resSync.get)
+		pipeSync
+			.error[ resSync.set('''error -> «msg»''') ]
+			.publish(new Message(1L, 'route', 10))
+		Assert.assertEquals('error -> filter-error', resSync.get)
 		
 		val resAsync = new AtomicReference('')
-		val pipeAsync = new XPipeline<Void, String, String>
+		val pipeAsync = new XPipeline<Message>('P2')
 		pipeAsync
-			.filter[ yield(new RuntimeException('error')) true ]
-			.deliver[ resAsync.set('''«route» -> «data»''') ]
-			.error[ msg, error | resAsync.set('''«msg.route» -> «error.message»''') ]
+			.filter[ yield(new RuntimeException('filter-error')) true ]
+			.then[ resAsync.set('''«cmd» -> «seq»''') ]
 		
 		//some system sends a message...
-		pipeAsync.in(new XMessage(null, 'route', 'error'))
-		Assert.assertEquals('route -> error', resAsync.get)
+		pipeAsync
+			.error[ resAsync.set('''error -> «msg»''') ]
+			.publish(new Message(1L, 'route', 10))
+		Assert.assertEquals('error -> filter-error', resAsync.get)
 	}
 }

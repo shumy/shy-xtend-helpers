@@ -9,9 +9,13 @@ class CircuitError {
 	val Throwable ex
 	val stack = new Stack<String>
 	
-	new(String msg) { this(msg, null) }
-	new(String msg, Throwable ex) {
+	new(String msg) {
 		this.msg = msg
+		this.ex = null
+	}
+	
+	new(Throwable ex) {
+		this.msg = ex.message
 		this.ex = ex
 	}
 	
