@@ -4,8 +4,8 @@ import java.util.LinkedHashMap
 import org.eclipse.xtend.lib.annotations.Accessors
 import shy.xhelper.circuit.spec.IConnector
 import shy.xhelper.circuit.spec.IElement
-import shy.xhelper.circuit.spec.PluginProxy
 import shy.xhelper.circuit.spec.ThreadContext
+import shy.xhelper.circuit.spec.defaults.ProxyElement
 
 class XCircuit  {
 	@Accessors val String name
@@ -37,16 +37,16 @@ class XCircuit  {
 	}
 	
 	def <D, T extends IConnector<D>> void plugin(String position, (T)=>IConnector<D> pluginFun) {
-		if (ThreadContext.contains(PluginProxy))
+		if (ThreadContext.contains(ProxyElement))
 			throw new RuntimeException('''Insert plugins one at a time: { circuit: «name», position: «position» }''')
 			
-		val elem = elements.get(position) as T 
+		val elem = elements.get(position) as ProxyElement<D>
 		if (elem === null)
 			throw new RuntimeException('''No element at position: { circuit: «name», position: «position» }''')
 		
-		ThreadContext.set(PluginProxy, elem.proxy)
-			val end = pluginFun.apply(elem)
-		ThreadContext.reset(PluginProxy)
+		ThreadContext.set(ProxyElement, elem)
+			val end = pluginFun.apply(elem as T) as ProxyElement<D>
+		ThreadContext.reset(ProxyElement)
 		
 		if (end === null)
 			throw new RuntimeException('''Plugin function returned null: { circuit: «name», position: «position» }''')
@@ -54,7 +54,7 @@ class XCircuit  {
 		if (end === elem)
 			throw new RuntimeException('''Plugin function returned the same element: { circuit: «name», position: «position» }''')
 		
-		elem.proxy.complete(end)
+		elem.complete(end)
 	}
 	
 	override toString() '''

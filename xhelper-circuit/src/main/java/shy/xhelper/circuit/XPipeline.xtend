@@ -4,10 +4,10 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import shy.xhelper.async.Async
 import shy.xhelper.async.XAsynchronous
 import shy.xhelper.circuit.spec.CircuitError
-import shy.xhelper.circuit.spec.defaults.DefaultIO
+import shy.xhelper.circuit.spec.defaults.ProxyElement
 
 @FinalFieldsConstructor
-class XPipeline<D> extends DefaultIO<D> {
+class XPipeline<D> extends ProxyElement<D> {
 	
 	@XAsynchronous
 	def <T> map((D)=>T transform) {

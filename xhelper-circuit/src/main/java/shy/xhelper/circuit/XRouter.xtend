@@ -10,11 +10,10 @@ import shy.xhelper.async.Async
 import shy.xhelper.async.XAsynchronous
 import shy.xhelper.circuit.spec.CircuitError
 import shy.xhelper.circuit.spec.IConnector
-import shy.xhelper.circuit.spec.defaults.DefaultIO
-import shy.xhelper.circuit.spec.defaults.DefaultPublisher
+import shy.xhelper.circuit.spec.defaults.ProxyElement
 
 @FinalFieldsConstructor
-class XRouter<D> extends DefaultPublisher<D> {
+class XRouter<D> extends ProxyElement<D> {
 	val routes = new LinkedHashSet<Route<D>>
 	
 	val (D)=>String matchValue
@@ -54,7 +53,7 @@ class XRouter<D> extends DefaultPublisher<D> {
 }
 
 
-class Route<D> extends DefaultIO<D> {
+class Route<D> extends ProxyElement<D> {
 	val (D)=>String matchValue
 	val Pattern pattern
 	val Matcher matcher
@@ -82,7 +81,7 @@ class Route<D> extends DefaultIO<D> {
 	
 	@XAsynchronous
 	def <T> IConnector<T> extract((List<String>, D)=>T extractor) {
-		val newExtractor = new DefaultIO<T>(name + '-E')
+		val newExtractor = new ProxyElement<T>(name + '-E')
 		addConnection(newExtractor)
 		
 		newExtractor.error[ stackError ]

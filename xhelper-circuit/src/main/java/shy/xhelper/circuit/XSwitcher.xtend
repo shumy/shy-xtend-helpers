@@ -4,11 +4,10 @@ import java.util.LinkedHashSet
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import shy.xhelper.circuit.spec.CircuitError
 import shy.xhelper.circuit.spec.IConnector
-import shy.xhelper.circuit.spec.defaults.DefaultIO
-import shy.xhelper.circuit.spec.defaults.DefaultPublisher
+import shy.xhelper.circuit.spec.defaults.ProxyElement
 
 @FinalFieldsConstructor
-class XSwitcher<D> extends DefaultPublisher<D> {
+class XSwitcher<D> extends ProxyElement<D> {
 	val branches = new LinkedHashSet<Branch<D>>
 	
 	def Iterable<Branch<D>> getBranches() { branches }
@@ -36,7 +35,7 @@ class XSwitcher<D> extends DefaultPublisher<D> {
 	}
 }
 
-class Branch<D> extends DefaultIO<D> {
+class Branch<D> extends ProxyElement<D> {
 	val (D)=>boolean condition
 	
 	package new(String name, (D)=>boolean condition) {
