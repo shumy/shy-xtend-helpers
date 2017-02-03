@@ -3,9 +3,9 @@ package shy.xhelper.circuit
 import java.util.LinkedHashSet
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import shy.xhelper.circuit.spec.CircuitError
-import shy.xhelper.circuit.spec.DefaultIO
-import shy.xhelper.circuit.spec.DefaultPublisher
 import shy.xhelper.circuit.spec.IConnector
+import shy.xhelper.circuit.spec.defaults.DefaultIO
+import shy.xhelper.circuit.spec.defaults.DefaultPublisher
 
 @FinalFieldsConstructor
 class XSwitcher<D> extends DefaultPublisher<D> {
@@ -28,9 +28,9 @@ class XSwitcher<D> extends DefaultPublisher<D> {
 	
 	def when((D)=>boolean condition) {
 		val branch = new Branch('''«name»-B«branches.size»''', condition)
-		branch.error[ stackError ]
-		connections.add(branch)
+		addConnection(branch)
 		
+		branch.error[ stackError ]
 		branches.add(branch)
 		return branch
 	}

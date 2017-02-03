@@ -1,27 +1,24 @@
 package shy.xhelper.circuit
 
 import java.util.LinkedHashMap
-import java.util.UUID
 import org.eclipse.xtend.lib.annotations.Accessors
 import shy.xhelper.circuit.spec.IElement
 import shy.xhelper.circuit.spec.IPublisherConnector
-import shy.xhelper.circuit.spec.IPublisher
+import shy.xhelper.circuit.spec.ThreadContext
+import shy.xhelper.circuit.spec.PluginProxy
 
 class XCircuit  {
 	@Accessors val String name
 	
-	var boolean completed = false
-	val staticElements = new LinkedHashMap<String, IElement>
-	val dynamicElements = new LinkedHashMap<String, IElement>
+	val elements = new LinkedHashMap<String, IElement>
 	
 	//TODO: input and output elements?
 	
-	package new(String name) {
+	new(String name, (XCircuit)=>void builder) {
 		this.name = name
-	}
-	
-	def String elementPostfix() {
-		if (completed) '''(«UUID.randomUUID.toString»)''' else ''
+		ThreadContext.set(XCircuit, this)
+			builder.apply(this)
+		ThreadContext.reset(XCircuit)
 	}
 	
 	def void addElement(IElement elem) {
@@ -39,31 +36,26 @@ class XCircuit  {
 		return elem
 	}
 	
-	def void removeElement(String elementName) {
-		if (!completed)
-			throw new RuntimeException('''Can not remove element from circuit before completion: { circuit: «name», element: «elementName» }''')
-		
-		dynamicElements.remove(elementName)
-	}
-	
-	//close the static part of the circuit
-	def void complete() { completed = true }
-	
-	def <D> void addPlugin(String position, IPublisherConnector<D> plugin) {
-		val elem = staticElements.get(position) as IPublisher<D>
+	def <D, T extends IPublisherConnector<D>> void plugin(String position, (T)=>IPublisherConnector<D> pluginFun) {
+		val elem = elements.get(position) as T 
 		if (elem === null)
 			throw new RuntimeException('''No element at position: { circuit: «name», position: «position» }''')
 		
-		elem.proxy.connect(plugin)
-	}
-	
-	private def elements() {
-		if (completed) dynamicElements else staticElements
+		ThreadContext.set(PluginProxy, elem.proxy)
+			val end = pluginFun.apply(elem)
+		ThreadContext.reset(PluginProxy)
+		
+		if (end === null)
+			throw new RuntimeException('''Plugin function returned null: { circuit: «name», position: «position» }''')
+		
+		if (end === elem)
+			throw new RuntimeException('''Plugin function returned the same element: { circuit: «name», position: «position» }''')
+		
+		elem.proxy.complete(end)
 	}
 	
 	override toString() '''
 		«name»:
-		  static:       [«FOR key: staticElements.keySet SEPARATOR ', '»«key»«ENDFOR»]
-		  dynamic:      [«FOR key: dynamicElements.keySet SEPARATOR ', '»«key»«ENDFOR»]
+		  static:       [«FOR key: elements.keySet SEPARATOR ', '»«key»«ENDFOR»]
 	'''
 }

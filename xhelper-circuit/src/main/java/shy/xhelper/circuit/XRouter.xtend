@@ -9,9 +9,9 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 import shy.xhelper.async.Async
 import shy.xhelper.async.XAsynchronous
 import shy.xhelper.circuit.spec.CircuitError
-import shy.xhelper.circuit.spec.DefaultIO
-import shy.xhelper.circuit.spec.DefaultPublisher
 import shy.xhelper.circuit.spec.IConnector
+import shy.xhelper.circuit.spec.defaults.DefaultIO
+import shy.xhelper.circuit.spec.defaults.DefaultPublisher
 
 @FinalFieldsConstructor
 class XRouter<D> extends DefaultPublisher<D> {
@@ -41,9 +41,9 @@ class XRouter<D> extends DefaultPublisher<D> {
 	
 	def route(String regex) {
 		val route = new Route('''«name»-R«routes.size»''', matchValue, regex)
-		route.error[ stackError ]
-		connections.add(route)
+		addConnection(route)
 		
+		route.error[ stackError ]
 		routes.add(route)
 		return route
 	}
@@ -83,9 +83,9 @@ class Route<D> extends DefaultIO<D> {
 	@XAsynchronous
 	def <T> IConnector<T> extract((List<String>, D)=>T extractor) {
 		val newExtractor = new DefaultIO<T>(name + '-E')
-		newExtractor.error[ stackError ]
-		connections.add(newExtractor)
+		addConnection(newExtractor)
 		
+		newExtractor.error[ stackError ]
 		then[ data |
 			val params = new ArrayList<String>(matcher.groupCount)
 			for(var i=1; i<=matcher.groupCount; i++)

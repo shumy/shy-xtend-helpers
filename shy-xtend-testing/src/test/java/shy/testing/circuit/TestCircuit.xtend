@@ -2,7 +2,7 @@ package shy.testing.circuit
 
 import org.junit.Assert
 import org.junit.Test
-import shy.xhelper.circuit.CircuitRegistry
+import shy.xhelper.circuit.XCircuit
 import shy.xhelper.circuit.XPipeline
 import shy.xtesting.circuit.Message
 
@@ -13,7 +13,7 @@ class TestCircuit {
 	@Test
 	def void simpleCircuit() {
 		val sb = new StringBuilder
-		CircuitRegistry.create('simpleCircuit')[
+		new XCircuit('simpleCircuit')[
 			
 			// main circuit
 			val pipe = new XPipeline<String>('P1')
@@ -27,7 +27,7 @@ class TestCircuit {
 				]
 			
 			// plugins
-			addPlugin('P1-M', new XPipeline<Message>('Plugin') => [
+			plugin('P1-M', [ XPipeline<Message> it |
 				filter[
 					println('''filter: «cmd»''')
 					cmd != 'filtered'
