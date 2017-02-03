@@ -35,12 +35,12 @@ class TestSwitcher {
 					sb.append('''stream - «msg.id» «it»«'\n'»''')
 				]
 				
-				sb.append('''init - «msg» at «branch.name»«'\n'»''')
+				sb.append('''init - «msg»«'\n'»''')
 				streams.put(msg.id, branch)
 			]
 			when[ cmd == 'cpl' ].then[ msg | 
 				val branch = streams.get(msg.id)
-				sb.append('''complete - «msg» at «branch.name»«'\n'»''')
+				sb.append('''complete - «msg»«'\n'»''')
 				remove(branch)
 			]
 		]
@@ -49,12 +49,12 @@ class TestSwitcher {
 		
 		Assert.assertEquals(3, switcher.branches.size)
 		Assert.assertEquals('''
-			init - (1, init, 1) at s1-B2
-			init - (2, init, 2) at s1-B3
+			init - (1, init, 1)
+			init - (2, init, 2)
 			stream - 1 (1, nxt, 3)
 			stream - 2 (2, nxt, 4)
 			stream - 1 (1, nxt, 5)
-			complete - (1, cpl, 6) at s1-B2
+			complete - (1, cpl, 6)
 		'''.toString, sb.toString)
 	}
 	

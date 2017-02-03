@@ -2,17 +2,17 @@ package shy.xhelper.circuit
 
 import java.util.LinkedHashMap
 import org.eclipse.xtend.lib.annotations.Accessors
+import shy.xhelper.circuit.spec.IConnector
 import shy.xhelper.circuit.spec.IElement
-import shy.xhelper.circuit.spec.IPublisherConnector
-import shy.xhelper.circuit.spec.ThreadContext
 import shy.xhelper.circuit.spec.PluginProxy
+import shy.xhelper.circuit.spec.ThreadContext
 
 class XCircuit  {
 	@Accessors val String name
 	
 	val elements = new LinkedHashMap<String, IElement>
-	
-	//TODO: input and output elements?
+	//TODO: core and plugin elements ?
+	//TODO: input and output elements ?
 	
 	new(String name, (XCircuit)=>void builder) {
 		this.name = name
@@ -36,7 +36,10 @@ class XCircuit  {
 		return elem
 	}
 	
-	def <D, T extends IPublisherConnector<D>> void plugin(String position, (T)=>IPublisherConnector<D> pluginFun) {
+	def <D, T extends IConnector<D>> void plugin(String position, (T)=>IConnector<D> pluginFun) {
+		if (ThreadContext.contains(PluginProxy))
+			throw new RuntimeException('''Insert plugins one at a time: { circuit: «name», position: «position» }''')
+			
 		val elem = elements.get(position) as T 
 		if (elem === null)
 			throw new RuntimeException('''No element at position: { circuit: «name», position: «position» }''')

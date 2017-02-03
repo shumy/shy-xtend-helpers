@@ -8,22 +8,20 @@ class PluginProxy {
 	val IElement element
 	
 	var boolean connected = false
-	var IPublisher thisPublisher = null
+	var IPublisher<Object> thisPublisher = null
 	var (Object)=>void thisOnThen = null
 	var (CircuitError)=>void thisOnError = null
 	
 	var boolean pipeline = false
-	var IPublisher tailPublisher = null
+	var IPublisher<Object> tailPublisher = null
 	var (Object)=>void tailOnThen = null
-	var (CircuitError)=>void tailOnError = null
 	
-	var IConnector endConnector = null
+	var IConnector<Object> endConnector = null
 	var (Object)=>void endOnThen = null
-	var (CircuitError)=>void endOnError = null
 	
 	def void publish(Object data) {
 		if (pipeline && active) {
-			println('''tail: «data» name:«element.name»''')
+			//println('''tail: «data» name:«element.name»''')
 			tailOnThen?.apply(data)
 			tailPublisher?.publish(data)
 		} else {
@@ -41,7 +39,8 @@ class PluginProxy {
 	}
 	
 	def void connect(IPublisher<?> publisher) {
-		publisher.error[ stackError ]
+		val oPublisher = publisher as IPublisher<Object>
+		oPublisher.error[ stackError ]
 		
 		val proxy = ThreadContext.get(PluginProxy)
 		if (proxy === null) {
@@ -49,11 +48,15 @@ class PluginProxy {
 				throw new RuntimeException("Can't reconnect to publisher. It was already set!")
 			this.connected = true
 		
-			this.thisPublisher = publisher
+			this.thisPublisher = oPublisher
 		} else if (proxy === this) {
 			//in a plugin insertion context
 			if (!pipeline) {
-				tailPublisher = publisher
+				tailPublisher = oPublisher
+			} else {
+				endConnector.proxy.disconnect
+				endConnector.connect(oPublisher)
+				//TODO: complete when already exists a pipeline (insert at end)
 			}
 		}
 	}
@@ -67,45 +70,34 @@ class PluginProxy {
 		
 			this.thisOnThen = onThen
 		} else if (proxy === this) {
-			//in a plugin insertion context (if this is the proxy -> insert at end)
+			//in a plugin insertion context
 			if (!pipeline) {
 				tailOnThen = onThen
+			} else {
+				//TODO: complete when already exists a pipeline (insert at end)
 			}
 		}
 	}
 	
 	def void error((CircuitError)=>void onError) {
-		val proxy = ThreadContext.get(PluginProxy)
-		if (proxy === null) {
-			if (this.thisOnError !== null)
-				throw new RuntimeException("Can't reconnect error function. It was already set!")
+		if (this.thisOnError !== null)
+			throw new RuntimeException("Can't reconnect error function. It was already set!")
 		
-			this.thisOnError = onError
-		} else if (proxy === this) {
-			//in a plugin insertion context (if this is the proxy -> insert at end)
-			
-		}
+		this.thisOnError = onError
 	}
 	
 	def void stackError(CircuitError error) {
 		error.stack.add(element.name)
-		
-		/*if (pipeline && active)
-			endPublisher.stackError(error)
-		else {*/
-			if (thisOnError !== null)
-				thisOnError.apply(error)
-			else
-				throw new RuntimeException('No error interceptor on element: ' + element.name)	
-		//}
+		if (thisOnError !== null)
+			thisOnError.apply(error)
+		else
+			throw new RuntimeException('No error interceptor on element: ' + element.name)
 	}
 	
-	def void complete(IPublisherConnector<?> pEnd) {
-		//TODO: complete context initiated by XCircuit.plugin
-		
+	def void complete(IConnector<?> pEnd) {
 		pipeline = true
 		
-		this.endConnector = pEnd
+		this.endConnector = pEnd as IConnector<Object>
 		this.endConnector.then[ data |
 			thisOnThen?.apply(data)
 			thisPublisher?.publish(data)

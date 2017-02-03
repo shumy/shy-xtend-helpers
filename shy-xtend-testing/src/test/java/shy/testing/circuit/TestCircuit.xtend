@@ -19,7 +19,7 @@ class TestCircuit {
 			val pipe = new XPipeline<String>('P1')
 			pipe
 				.map[ Message.fromJson(it) ]
-				//.filter[ cmd != 'filtered' ] //exists as a plugin 
+				//plugin inserted here (in serie)
 				.switcher('S1') => [
 					when[ cmd == 'ok' ].then[ sb.append(it) ]
 					when[ cmd == 'error' ].then[ throw new RuntimeException('error') ]
@@ -28,12 +28,16 @@ class TestCircuit {
 			
 			// plugins
 			plugin('P1-M', [ XPipeline<Message> it |
+				//add filter as a plugin...
 				filter[
-					println('''filter: «cmd»''')
+					if (cmd == 'filter-error')
+						throw new RuntimeException('filter-error')
+						
 					cmd != 'filtered'
-				] //add filter as a plugin...
+				]
 			])
 			
+			//plugins are not part of the tree
 			Assert.assertEquals('''
 			|-P1
 			  |-P1-M
@@ -45,14 +49,15 @@ class TestCircuit {
 			
 			//TODO: use circuit instead to process messages...
 			pipe => [
-				error[ sb.append(it) ]
+				error[ sb.append('''(«msg», «stack»)''') ]
 				publish('{"id":1,"cmd":"ok","seq":1}')
 				publish('{"id":1,"cmd":"error","seq":2}')
 				publish('{"id":1,"cmd":"filtered","seq":3}')
-				publish('{"id":2,"cmd":"ok","seq":4}')
+				publish('{"id":1,"cmd":"ok","seq":4}')
+				publish('{"id":1,"cmd":"filter-error","seq":5}')
 			]
 			
-			Assert.assertEquals('(1, ok, 1){ "msg":"error", "stack":"[S1-B1, S1, P1-M, P1]", "type":"RuntimeException" }(2, ok, 4)', sb.toString)
+			Assert.assertEquals('(1, ok, 1)(error, [S1-B1, S1, P1-M, P1])(1, ok, 4)(filter-error, [P1-M-F, P1-M, P1])', sb.toString)
 			println(it)
 		]
 	}
