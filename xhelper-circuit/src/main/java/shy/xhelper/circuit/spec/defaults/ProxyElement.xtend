@@ -1,13 +1,18 @@
 package shy.xhelper.circuit.spec.defaults
 
-import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
+import java.util.LinkedHashSet
+import java.util.UUID
+import org.eclipse.xtend.lib.annotations.Accessors
+import shy.xhelper.circuit.XCircuit
 import shy.xhelper.circuit.spec.CircuitError
 import shy.xhelper.circuit.spec.IConnector
+import shy.xhelper.circuit.spec.IElement
 import shy.xhelper.circuit.spec.IPublisher
 import shy.xhelper.circuit.spec.ThreadContext
 
-@FinalFieldsConstructor
-class ProxyElement<T> extends Element implements IPublisher<T>, IConnector<T> {
+class ProxyElement<T> implements IPublisher<T>, IConnector<T> {
+	@Accessors val String name
+	
 	public boolean active = true
 	
 	var boolean connected = false
@@ -19,6 +24,21 @@ class ProxyElement<T> extends Element implements IPublisher<T>, IConnector<T> {
 	var IPublisher<T> tailPublisher = null
 	var (T)=>void tailOnThen = null
 	var ProxyElement<T> endConnector = null
+	
+	var XCircuit circuit = null
+	val connections = new LinkedHashSet<IElement>
+	
+	new(String name, IElement elem) {
+		circuit = ThreadContext.get(XCircuit)
+		this.name = if (circuit !== null) name else '''«name»(«UUID.randomUUID.toString»)'''
+		
+		if (circuit !== null) {
+			val elemRef = if (elem === null) this else elem
+			circuit.addElement(name, elemRef)
+		}
+	}
+	
+	override getConnections() { connections }
 	
 	override publish(T data) {
 		if (pipeline && active) {
@@ -84,6 +104,14 @@ class ProxyElement<T> extends Element implements IPublisher<T>, IConnector<T> {
 	}
 	
 	
+	def void addConnection(IElement elem) {
+		if (!ThreadContext.contains(ProxyElement))
+			connections.add(elem)
+	}
+	
+	def void removeConnection(IElement elem) {
+		connections.remove(elem)
+	}
 	
 	def void disconnect() {
 		connected = false

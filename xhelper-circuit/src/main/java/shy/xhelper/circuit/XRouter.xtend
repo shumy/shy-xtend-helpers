@@ -10,10 +10,12 @@ import shy.xhelper.async.Async
 import shy.xhelper.async.XAsynchronous
 import shy.xhelper.circuit.spec.CircuitError
 import shy.xhelper.circuit.spec.IConnector
+import shy.xhelper.circuit.spec.IPublisher
+import shy.xhelper.circuit.spec.defaults.Element
 import shy.xhelper.circuit.spec.defaults.ProxyElement
 
 @FinalFieldsConstructor
-class XRouter<D> extends ProxyElement<D> {
+class XRouter<D> extends Element<D> implements IPublisher<D> {
 	val routes = new LinkedHashSet<Route<D>>
 	
 	val (D)=>String matchValue
@@ -23,7 +25,7 @@ class XRouter<D> extends ProxyElement<D> {
 	
 	def void remove(IConnector<D> route) {
 		routes.remove(route)
-		connections.remove(route)
+		proxy.removeConnection(route)
 	}
 	
 	override publish(D data) {
@@ -38,11 +40,15 @@ class XRouter<D> extends ProxyElement<D> {
 		return this
 	}
 	
+	override error((CircuitError)=>void onError) {
+		proxy.error(onError)
+	}
+	
 	def route(String regex) {
 		val route = new Route('''«name»-R«routes.size»''', matchValue, regex)
-		addConnection(route)
+		proxy.addConnection(route)
 		
-		route.error[ stackError ]
+		route.error[ proxy.stackError(it) ]
 		routes.add(route)
 		return route
 	}
@@ -50,6 +56,7 @@ class XRouter<D> extends ProxyElement<D> {
 	def noRoute((D)=>void noRoute) {
 		this.noRoute = noRoute
 	}
+	
 }
 
 
@@ -59,7 +66,7 @@ class Route<D> extends ProxyElement<D> {
 	val Matcher matcher
 	
 	package new(String name, (D)=>String matchValue, String regex) {
-		super(name)
+		super(name, null)
 		this.matchValue = matchValue
 		this.pattern = Pattern.compile(regex)
 		this.matcher = pattern.matcher('')
@@ -81,7 +88,7 @@ class Route<D> extends ProxyElement<D> {
 	
 	@XAsynchronous
 	def <T> IConnector<T> extract((List<String>, D)=>T extractor) {
-		val newExtractor = new ProxyElement<T>(name + '-E')
+		val newExtractor = new ProxyElement<T>(name + '-E', this)
 		addConnection(newExtractor)
 		
 		newExtractor.error[ stackError ]
